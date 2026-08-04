@@ -1,0 +1,2089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NTPC Unchahar | Cash Purchase Register</title>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap">
+<style>
+:root {
+  --navy:#00264d; --navy2:#003b66; --orange:#e67e22; --orange2:#d35400;
+  --green:#1f7b4d; --red:#c0392b; --blue:#2c6fa0; --purple:#6a0dad;
+  --bg:#eef2f5; --card:#fff; --border:#e2e9f0; --text:#1e4663; --sub:#4a627a;
+  --sidebar-w:200px;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Roboto,sans-serif;}
+body{background:var(--bg);display:flex;min-height:100vh;}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sidebar-w);background:linear-gradient(180deg,var(--navy) 0%,var(--navy2) 100%);
+  display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;
+  box-shadow:4px 0 20px rgba(0,0,0,0.25);}
+.sidebar-logo{padding:22px 20px 16px;border-bottom:1px solid rgba(255,255,255,0.1);}
+.sidebar-logo h2{color:#ffc107;font-size:1rem;font-weight:800;letter-spacing:0.5px;}
+.sidebar-logo p{color:rgba(255,255,255,0.6);font-size:0.68rem;margin-top:3px;}
+.sidebar-logo .bolt{font-size:1.5rem;color:#ffc107;margin-bottom:6px;}
+.nav-menu{padding:16px 0;flex:1;}
+.nav-item{display:flex;align-items:center;gap:12px;padding:13px 22px;cursor:pointer;
+  color:rgba(255,255,255,0.7);font-size:0.88rem;font-weight:600;transition:0.2s;
+  border-left:3px solid transparent;margin:2px 0;}
+.nav-item:hover{background:rgba(255,255,255,0.07);color:#fff;}
+.nav-item.active{background:rgba(230,126,34,0.18);color:#ffc107;border-left-color:#ffc107;}
+.nav-item i{width:20px;text-align:center;font-size:1rem;}
+.nav-section-label{font-size:0.62rem;color:rgba(255,255,255,0.35);text-transform:uppercase;
+  letter-spacing:1.5px;padding:10px 22px 4px;}
+.sidebar-clock{padding:14px 20px;border-top:1px solid rgba(255,255,255,0.1);
+  color:rgba(255,255,255,0.7);font-family:monospace;font-size:0.85rem;}
+
+/* ── MAIN AREA ── */
+.main-wrap{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.topbar{background:white;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;
+  box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+.topbar-title{font-size:1.1rem;font-weight:800;color:var(--text);}
+.topbar-title span{color:var(--orange);}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.gs-bar{display:none;align-items:center;gap:8px;background:var(--navy);color:white;
+  padding:7px 18px;font-size:0.8rem;font-weight:700;border-radius:40px;}
+
+.page-content{padding:16px 18px;flex:1;}
+
+/* ── TAB PAGES ── */
+.tab-page{display:none;}
+.tab-page.active{display:block;}
+
+/* ── STAT CARDS ── */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:18px;margin-bottom:24px;}
+.stat-card{background:white;border-radius:20px;padding:20px 22px;
+  box-shadow:0 4px 14px rgba(0,0,0,0.06);border:1px solid var(--border);transition:0.2s;}
+.stat-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,0.1);}
+.stat-card .sc-icon{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;
+  justify-content:center;font-size:1.2rem;margin-bottom:12px;}
+.sc-orange{background:#fff3e0;color:var(--orange);}
+.sc-blue{background:#e8f0ff;color:#2c6fa0;}
+.sc-green{background:#e6f7ef;color:var(--green);}
+.sc-red{background:#fdecea;color:var(--red);}
+.sc-purple{background:#f3e8ff;color:var(--purple);}
+.stat-card h3{font-size:0.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--sub);font-weight:700;}
+.stat-val{font-size:1.7rem;font-weight:800;color:var(--text);margin-top:4px;line-height:1;}
+.stat-sub{font-size:0.72rem;color:var(--sub);margin-top:5px;}
+
+/* ── SECTION CARDS ── */
+.section-card{background:white;border-radius:20px;padding:22px 24px;
+  box-shadow:0 4px 14px rgba(0,0,0,0.05);border:1px solid var(--border);margin-bottom:22px;}
+.section-card h2{font-size:1rem;font-weight:800;color:var(--text);margin-bottom:16px;
+  display:flex;align-items:center;gap:8px;}
+.section-card h2 i{color:var(--orange);}
+
+/* ── CHART ── */
+.chart-wrap{overflow-x:auto;}
+.bar-chart{display:flex;align-items:flex-end;gap:8px;height:280px;padding-bottom:50px;min-width:600px;}
+.bar-col{display:flex;flex-direction:column;align-items:center;flex:1;min-width:36px;}
+.bar{width:100%;border-radius:8px 8px 0 0;background:linear-gradient(180deg,var(--orange),var(--orange2));
+  transition:height 0.5s ease;min-height:4px;cursor:pointer;position:relative;}
+.bar:hover{filter:brightness(1.1);}
+.bar-tip{display:none;position:absolute;top:-30px;left:50%;transform:translateX(-50%);
+  background:#222;color:white;font-size:0.65rem;padding:2px 6px;border-radius:6px;white-space:nowrap;}
+.bar:hover .bar-tip{display:block;}
+.bar-label{font-size:0.65rem;color:var(--sub);margin-top:4px;font-weight:600;}
+.bar-amt{font-size:0.65rem;color:var(--orange);font-weight:700;white-space:nowrap;margin-top:6px;text-align:center;}
+
+/* ── PENDING ── */
+.pending-wrap{background:#fff5f5;border:2px solid #e74c3c;border-radius:16px;padding:18px 20px;}
+.pending-header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+.pending-title{font-size:0.95rem;font-weight:800;color:#c0392b;}
+.pending-badge{background:#e74c3c;color:white;border-radius:40px;padding:3px 12px;font-size:0.75rem;font-weight:700;}
+.pending-reminder{font-size:0.78rem;color:#c0392b;font-weight:600;margin-left:auto;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.35}}
+@keyframes bellShake{0%,100%{transform:rotate(0)}20%{transform:rotate(-18deg)}40%{transform:rotate(18deg)}60%{transform:rotate(-10deg)}80%{transform:rotate(10deg)}}
+.bell-icon{animation:bellShake 1.4s infinite;display:inline-block;color:#e74c3c;font-size:1.3rem;}
+.ptable{width:100%;border-collapse:collapse;font-size:0.78rem;}
+.ptable th{background:#e74c3c;color:white;padding:8px;text-align:center;}
+.ptable td{padding:7px 8px;border-bottom:1px solid #f5c6c6;text-align:center;vertical-align:middle;}
+.ptable tr:nth-child(even) td{background:#fff0f0;}
+.pay-badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;}
+.pay-ok{background:#e8f8ee;color:#1a7a3c;}
+.pay-pend{background:#fdecea;color:#c0392b;animation:pulse 1.5s infinite;}
+
+/* ── RECENT TABLE ── */
+.recent-table{width:100%;border-collapse:collapse;font-size:0.78rem;}
+.recent-table th{background:var(--navy);color:white;padding:9px 8px;text-align:center;font-weight:600;}
+.recent-table td{padding:8px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;}
+.recent-table tr:hover td{background:#f5f8fa;}
+
+/* ── ADD ENTRY FORM ── */
+.form-section-title{font-size:1rem;font-weight:800;color:var(--text);margin-bottom:18px;
+  display:flex;align-items:center;gap:8px;padding-bottom:12px;border-bottom:2px solid var(--border);}
+.form-section-title i{color:var(--orange);}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:18px;margin-bottom:20px;}
+.input-field{display:flex;flex-direction:column;gap:6px;}
+.input-field label{font-weight:700;font-size:0.72rem;color:#2c4c6e;text-transform:uppercase;
+  display:flex;align-items:center;gap:6px;}
+.input-field label i{color:var(--orange);width:16px;}
+.input-field input,.input-field select{padding:10px 14px;border-radius:14px;border:1.5px solid var(--border);
+  background:white;font-size:0.85rem;outline:none;transition:0.2s;}
+.input-field input:focus,.input-field select:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(230,126,34,0.1);}
+
+.mat-section{margin-top:22px;padding-top:20px;border-top:2px dashed var(--orange);}
+.mat-section-title{font-size:0.95rem;font-weight:700;color:var(--orange);margin-bottom:12px;
+  display:flex;align-items:center;gap:8px;}
+.mat-table{width:100%;border-collapse:collapse;font-size:0.78rem;}
+.mat-table th{background:#e2e9f0;padding:9px 6px;text-align:center;font-weight:700;color:var(--text);}
+.mat-table td{border-bottom:1px solid #ddd;padding:6px 4px;vertical-align:middle;}
+.mat-table input,.mat-table select{width:100%;padding:5px 8px;border-radius:10px;border:1px solid #ccc;font-size:0.8rem;}
+.mat-table input:focus{outline:none;border-color:var(--orange);}
+.mat-footer-row td{background:#fff3e0;font-weight:700;padding:8px;}
+
+.btn-add-mat{background:var(--orange);color:white;padding:7px 16px;border-radius:40px;border:none;
+  margin:12px 0;display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:0.82rem;font-weight:600;}
+.btn-add-mat:hover{background:var(--orange2);}
+
+.btn-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px;}
+.btn{padding:10px 22px;border-radius:40px;border:none;font-weight:700;font-size:0.85rem;
+  display:inline-flex;align-items:center;gap:8px;cursor:pointer;transition:0.2s;}
+.btn-primary{background:var(--orange);color:white;}
+.btn-primary:hover{background:var(--orange2);transform:translateY(-2px);}
+.btn-success{background:var(--green);color:white;}
+.btn-dark{background:#4b5e77;color:white;}
+.btn-outline{background:white;border:1.5px solid var(--border);color:var(--sub);}
+.btn-purple{background:var(--purple);color:white;}
+.btn-outline:hover{background:#f0f4fa;}
+
+/* ── RECEIPT RECORD ── */
+.cal-bar{background:white;border-radius:16px;border:1.5px solid var(--border);
+  box-shadow:0 3px 10px rgba(0,0,0,0.06);display:flex;align-items:center;
+  gap:0;overflow:hidden;flex-wrap:wrap;margin-bottom:18px;}
+.cal-icon-box{background:var(--navy);color:white;padding:13px 16px;font-size:1.2rem;}
+.cal-popup-wrap{position:relative;}
+.cal-month-btn{background:none;border:none;font-size:0.9rem;font-weight:800;color:var(--text);
+  padding:13px 10px 13px 14px;cursor:pointer;display:flex;align-items:center;gap:5px;}
+.cal-month-btn .caret{font-size:0.65rem;color:var(--orange);}
+.cal-month-btn:hover{background:#f5f8fa;}
+.cal-arrows{display:flex;flex-direction:column;border-left:1.5px solid var(--border);}
+.cal-arrow{background:none;border:none;padding:4px 11px;cursor:pointer;color:var(--text);font-size:0.72rem;}
+.cal-arrow:hover{background:#f0f4fa;color:var(--orange);}
+.cal-year-box{border-left:1.5px solid var(--border);display:flex;align-items:center;gap:6px;padding:0 12px;}
+.cal-year-box label{font-size:0.68rem;font-weight:700;color:var(--sub);text-transform:uppercase;}
+.cal-year-input{width:68px;border:1.5px solid var(--orange);border-radius:10px;padding:5px 7px;
+  font-size:0.85rem;font-weight:800;color:var(--text);text-align:center;outline:none;}
+.cal-right{border-left:1.5px solid var(--border);display:flex;align-items:center;gap:10px;padding:9px 16px;flex-wrap:wrap;margin-left:auto;}
+.cal-result{font-size:0.78rem;font-weight:700;color:var(--orange);}
+.cal-today-btn{background:none;border:1.5px solid var(--orange);border-radius:12px;color:var(--orange);
+  font-weight:700;font-size:0.75rem;padding:4px 12px;cursor:pointer;}
+.cal-today-btn:hover{background:#fff3e0;}
+.cal-clear-btn{background:#e2e9f0;border:none;border-radius:12px;color:var(--sub);
+  font-weight:700;font-size:0.75rem;padding:4px 12px;cursor:pointer;}
+.cal-clear-btn:hover{background:#cdd5df;}
+.cal-month-popup{display:none;position:absolute;background:white;border-radius:16px;
+  box-shadow:0 8px 30px rgba(0,0,0,0.18);z-index:200;padding:12px;width:220px;margin-top:4px;}
+.cal-month-popup.open{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;}
+.cal-mpop-btn{padding:7px 4px;border:none;border-radius:8px;background:#f0f4fa;
+  font-size:0.76rem;font-weight:600;color:var(--text);cursor:pointer;text-align:center;}
+.cal-mpop-btn:hover,.cal-mpop-btn.active{background:var(--orange);color:white;}
+
+.table-wrap{overflow-x:auto;border-radius:16px;border:1px solid var(--border);background:white;}
+.data-table{width:100%;border-collapse:collapse;font-size:0.68rem;min-width:unset;table-layout:auto;}
+.data-table th{background:var(--navy);color:white;padding:8px 4px;font-weight:600;
+  text-align:center;border-right:1px solid #2c5a7a;font-size:0.65rem;white-space:nowrap;}
+.data-table td{padding:5px 4px;border-bottom:1px solid #eaeff5;text-align:center;vertical-align:middle;font-size:0.68rem;}
+.inv-even{background:#f0f6ff;}.inv-odd{background:#fff;}
+.inv-even td,.inv-odd td{border-bottom:1px solid #dde5ef;}
+tr.grp-first td{border-top:2px solid var(--navy)!important;}
+tr.grp-last td{border-bottom:3px solid var(--navy)!important;}
+td.mc{background:inherit;font-weight:600;border-right:2px solid #c0d0e0;vertical-align:middle;}
+.action-btn{background:none;border:none;font-size:0.95rem;cursor:pointer;margin:0 3px;}
+.edit-btn{color:#2c5282;}.delete-btn{color:#c0392b;}
+
+.tbl-footer-row td{background:#fff3e0;font-weight:700;padding:10px;text-align:center;}
+
+/* ── RECEIPT PRINT ── */
+.receipt-modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,0.55);z-index:500;justify-content:center;align-items:flex-start;
+  overflow-y:auto;padding:30px 20px;}
+.receipt-modal.open{display:flex;}
+.receipt-paper{background:white;width:100%;max-width:760px;margin:auto;border-radius:12px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.3);padding:0;overflow:hidden;}
+.rp-header{background:var(--navy);color:white;padding:20px 28px;text-align:center;}
+.rp-header h1{font-size:1.1rem;font-weight:800;letter-spacing:0.5px;}
+.rp-header p{font-size:0.78rem;opacity:0.85;margin-top:3px;}
+.rp-meta{display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:2px solid var(--border);}
+.rp-meta-block{padding:14px 20px;border-right:1px solid var(--border);}
+.rp-meta-block:last-child{border-right:none;}
+.rp-meta-label{font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--sub);font-weight:700;}
+.rp-meta-val{font-size:0.9rem;font-weight:700;color:var(--text);margin-top:2px;}
+.rp-mat-table{width:100%;border-collapse:collapse;font-size:0.78rem;margin:0;}
+.rp-mat-table th{background:#f0f4fa;color:var(--text);padding:9px 8px;text-align:center;
+  border-bottom:2px solid var(--border);font-weight:700;}
+.rp-mat-table td{padding:8px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;}
+.rp-mat-table tr:nth-child(even) td{background:#fafbfd;}
+.rp-totals{padding:16px 20px;background:#f8fafc;border-top:2px solid var(--border);}
+.rp-total-row{display:flex;justify-content:space-between;padding:4px 0;font-size:0.85rem;}
+.rp-total-row.grand{font-weight:800;font-size:1rem;color:var(--red);padding-top:8px;
+  border-top:2px solid var(--border);margin-top:4px;}
+.rp-footer{text-align:center;padding:12px 20px;font-size:0.7rem;color:var(--sub);
+  border-top:1px solid var(--border);}
+.rp-actions{display:flex;gap:10px;padding:16px 20px;background:#f0f4fa;justify-content:flex-end;}
+
+/* ── MISC ── */
+.badge-green{background:#e6f7ef;color:var(--green);padding:2px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;}
+.badge-red{background:#fdecea;color:var(--red);padding:2px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;}
+.badge-orange{background:#fff3e0;color:var(--orange);padding:2px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;}
+.empty-state{text-align:center;padding:40px 20px;color:var(--sub);}
+.empty-state i{font-size:3rem;margin-bottom:12px;display:block;opacity:0.3;}
+
+/* ══ INTRO SPLASH SCREEN ══ */
+#introSplash{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:linear-gradient(135deg,#00264d 0%,#003b66 55%,#001f3f 100%);
+  z-index:99999;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  overflow:hidden;
+}
+#introSplash.hide{
+  animation:splashOut 0.7s cubic-bezier(0.4,0,0.2,1) forwards;
+}
+@keyframes splashOut{
+  0%{opacity:1;transform:scale(1);}
+  60%{opacity:1;transform:scale(1.04);}
+  100%{opacity:0;transform:scale(1.08);pointer-events:none;}
+}
+
+/* animated background grid lines */
+.splash-grid{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);
+  background-size:48px 48px;
+  animation:gridMove 4s linear infinite;
+}
+@keyframes gridMove{
+  0%{background-position:0 0;}
+  100%{background-position:48px 48px;}
+}
+
+/* glow ring */
+.splash-glow{
+  position:absolute;
+  width:500px;height:500px;border-radius:50%;
+  background:radial-gradient(circle,rgba(230,126,34,0.15) 0%,transparent 70%);
+  animation:glowPulse 2.5s ease-in-out infinite;
+}
+@keyframes glowPulse{
+  0%,100%{transform:scale(0.9);opacity:0.6;}
+  50%{transform:scale(1.15);opacity:1;}
+}
+
+/* top ribbon */
+.splash-ribbon{
+  position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,transparent,#ffc107,#e67e22,#ffc107,transparent);
+  background-size:200% 100%;
+  animation:ribbonSlide 2s ease-in-out infinite;
+}
+@keyframes ribbonSlide{
+  0%{background-position:-200% 0;}
+  100%{background-position:200% 0;}
+}
+
+/* bolt icon */
+.splash-bolt{
+  font-size:4.5rem;color:#ffc107;
+  animation:boltEntry 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.2s both,boltFloat 2.5s ease-in-out 0.8s infinite;
+  filter:drop-shadow(0 0 20px rgba(255,193,7,0.6));
+  position:relative;z-index:2;
+}
+@keyframes boltEntry{
+  from{opacity:0;transform:scale(0.3) rotate(-30deg);}
+  to{opacity:1;transform:scale(1) rotate(0deg);}
+}
+@keyframes boltFloat{
+  0%,100%{transform:translateY(0) scale(1);}
+  50%{transform:translateY(-8px) scale(1.05);}
+}
+
+/* company name */
+.splash-title{
+  font-size:2.4rem;font-weight:900;color:white;letter-spacing:2px;
+  text-align:center;margin-top:18px;
+  animation:titleEntry 0.7s cubic-bezier(0.34,1.56,0.64,1) 0.45s both;
+  position:relative;z-index:2;
+  text-shadow:0 2px 20px rgba(0,0,0,0.3);
+}
+.splash-title span{color:#ffc107;}
+@keyframes titleEntry{
+  from{opacity:0;transform:translateY(30px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+/* subtitle */
+.splash-subtitle{
+  font-size:1rem;color:rgba(255,255,255,0.7);letter-spacing:3px;
+  text-transform:uppercase;margin-top:8px;
+  animation:titleEntry 0.7s ease 0.65s both;
+  position:relative;z-index:2;
+}
+
+/* divider line */
+.splash-divider{
+  width:0;height:2px;
+  background:linear-gradient(90deg,transparent,#ffc107,var(--orange),transparent);
+  margin:20px 0 24px;border-radius:2px;
+  animation:dividerGrow 0.6s ease 0.85s both;
+  position:relative;z-index:2;
+}
+@keyframes dividerGrow{
+  from{width:0;opacity:0;}
+  to{width:260px;opacity:1;}
+}
+
+/* module tags */
+.splash-tags{
+  display:flex;gap:10px;margin-bottom:36px;
+  animation:titleEntry 0.5s ease 1.1s both;
+  position:relative;z-index:2;flex-wrap:wrap;justify-content:center;
+}
+.splash-tag{
+  background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);
+  color:rgba(255,255,255,0.85);padding:5px 14px;border-radius:20px;
+  font-size:0.72rem;font-weight:700;letter-spacing:0.5px;
+  backdrop-filter:blur(4px);
+}
+
+/* progress bar */
+.splash-progress-wrap{
+  width:320px;position:relative;z-index:2;
+  animation:titleEntry 0.5s ease 1s both;
+}
+.splash-progress-track{
+  height:4px;background:rgba(255,255,255,0.12);
+  border-radius:4px;overflow:hidden;margin-bottom:10px;
+}
+.splash-progress-bar{
+  height:100%;width:0%;
+  background:linear-gradient(90deg,#ffc107,#e67e22);
+  border-radius:4px;
+  animation:loadBar 2.2s cubic-bezier(0.4,0,0.2,1) 0.8s both;
+}
+@keyframes loadBar{
+  0%{width:0%;}
+  30%{width:35%;}
+  60%{width:68%;}
+  80%{width:85%;}
+  100%{width:100%;}
+}
+.splash-status{
+  font-size:0.72rem;color:rgba(255,255,255,0.5);
+  text-align:center;letter-spacing:1px;font-weight:600;
+  animation:statusPulse 0.8s ease infinite alternate;
+}
+@keyframes statusPulse{
+  from{opacity:0.5;}to{opacity:1;}
+}
+
+/* corner decoration */
+.splash-corner{
+  position:absolute;opacity:0.06;font-size:20rem;color:white;
+  font-weight:900;line-height:1;pointer-events:none;user-select:none;
+}
+.splash-corner.tl{top:-40px;left:-30px;}
+.splash-corner.br{bottom:-60px;right:-20px;}
+
+/* ── CALENDAR TOGGLE BUTTON ── */
+.cal-toggle-btn{
+  background:var(--navy);color:white;border:none;
+  padding:0 16px;display:flex;align-items:center;gap:7px;
+  cursor:pointer;font-size:0.82rem;font-weight:700;
+  align-self:stretch;border-left:1.5px solid rgba(255,255,255,0.15);
+  transition:background 0.2s;white-space:nowrap;position:relative;
+}
+.cal-toggle-btn:hover{background:#003b66;}
+.cal-toggle-btn.cal-active{background:var(--orange);}
+.cal-dot-badge{
+  width:8px;height:8px;background:#ffc107;border-radius:50%;
+  position:absolute;top:7px;right:8px;display:none;
+  box-shadow:0 0 0 2px var(--navy);
+}
+.cal-toggle-btn.cal-active .cal-dot-badge{display:block;box-shadow:0 0 0 2px var(--orange);}
+
+/* ── CALENDAR POPUP CONTAINER ── */
+.cal-popup-container{position:relative;align-self:stretch;display:flex;align-items:stretch;}
+
+/* ── MINI CALENDAR POPUP ── */
+.mini-cal-wrap{
+  display:none;
+  position:absolute;top:calc(100% + 8px);right:0;z-index:9999;
+  background:white;border-radius:18px;
+  border:1.5px solid var(--border);
+  box-shadow:0 12px 40px rgba(0,0,0,0.18);
+  overflow:hidden;width:280px;
+  animation:calIn 0.18s ease;
+}
+.mini-cal-wrap.open{display:block;}
+@keyframes calIn{
+  from{opacity:0;transform:translateY(-10px) scale(0.97);}
+  to{opacity:1;transform:translateY(0) scale(1);}
+}
+
+/* header */
+.mini-cal-header{
+  background:var(--navy);color:white;
+  padding:11px 14px 8px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.mini-cal-header .mch-title{font-size:0.88rem;font-weight:800;letter-spacing:0.5px;}
+.mini-cal-header .mch-sub{font-size:0.62rem;opacity:0.65;margin-top:2px;}
+.mini-cal-nav{display:flex;align-items:center;gap:4px;}
+.mini-cal-nav button{
+  background:rgba(255,255,255,0.15);border:none;color:white;
+  width:28px;height:28px;border-radius:8px;cursor:pointer;
+  font-size:1rem;line-height:1;display:flex;align-items:center;justify-content:center;
+}
+.mini-cal-nav button:hover{background:rgba(255,255,255,0.3);}
+.mini-cal-nav .mcn-label{
+  font-size:0.78rem;font-weight:800;min-width:100px;text-align:center;
+  padding:4px 6px;background:rgba(255,255,255,0.1);border-radius:8px;
+}
+
+/* manual date input row */
+.cal-manual-row{
+  background:#f0f4fa;border-bottom:1.5px solid var(--border);
+  padding:8px 12px;display:flex;align-items:center;gap:7px;
+}
+.cal-manual-row label{
+  font-size:0.68rem;font-weight:800;color:var(--sub);
+  text-transform:uppercase;white-space:nowrap;
+}
+.cal-manual-input{
+  flex:1;padding:6px 10px;border:1.5px solid var(--border);
+  border-radius:9px;font-size:0.82rem;font-weight:700;
+  color:var(--text);outline:none;background:white;
+  transition:border-color 0.2s;
+}
+.cal-manual-input:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(230,126,34,0.12);}
+.cal-manual-go{
+  background:var(--orange);color:white;border:none;
+  border-radius:9px;padding:6px 12px;font-size:0.78rem;
+  font-weight:800;cursor:pointer;white-space:nowrap;
+}
+.cal-manual-go:hover{background:var(--orange2);}
+
+/* grid */
+.mini-cal-body{padding:8px 12px 10px;}
+.mini-cal-days-hdr{
+  display:grid;grid-template-columns:repeat(7,1fr);
+  gap:2px;margin-bottom:4px;
+}
+.mini-cal-days-hdr span{
+  text-align:center;font-size:0.58rem;font-weight:800;
+  color:var(--sub);text-transform:uppercase;padding:3px 0;
+}
+.mini-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.mini-cal-day{
+  width:100%;aspect-ratio:1;border:none;border-radius:8px;
+  font-size:0.72rem;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:0.13s;background:transparent;color:var(--text);position:relative;
+}
+.mini-cal-day:hover{background:#e8f0ff;color:var(--orange);}
+.mini-cal-day.today{background:var(--navy);color:white;font-weight:800;}
+.mini-cal-day.today:hover{background:var(--navy2);}
+.mini-cal-day.selected{background:var(--orange);color:white;font-weight:800;}
+.mini-cal-day.selected:hover{background:var(--orange2);}
+.mini-cal-day.other-month{color:#ccc;}
+.mini-cal-day.has-invoice::after{
+  content:'';position:absolute;bottom:2px;left:50%;
+  transform:translateX(-50%);width:4px;height:4px;
+  border-radius:50%;background:var(--orange);
+}
+.mini-cal-day.today.has-invoice::after{background:#ffc107;}
+.mini-cal-day.selected.has-invoice::after{background:white;}
+
+/* footer */
+.mini-cal-footer{
+  border-top:1px solid var(--border);padding:8px 12px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:6px;background:#f8fafc;
+}
+.mini-cal-filter-info{font-size:0.72rem;font-weight:700;color:var(--orange);}
+.mini-cal-clear{
+  background:none;border:1.5px solid var(--border);border-radius:8px;
+  font-size:0.7rem;font-weight:700;color:var(--sub);padding:4px 11px;cursor:pointer;
+}
+.mini-cal-clear:hover{background:#f0f4fa;color:var(--orange);border-color:var(--orange);}
+.mini-cal-today-btn{
+  background:var(--navy);color:white;border:none;border-radius:8px;
+  font-size:0.7rem;font-weight:700;padding:4px 11px;cursor:pointer;
+}
+.mini-cal-today-btn:hover{background:var(--navy2);}
+
+/* active filter notice bar */
+.cal-date-filter-bar{
+  background:#fff8f0;border:1.5px solid #ffd599;border-radius:10px;
+  padding:6px 14px;font-size:0.75rem;font-weight:700;color:var(--orange);
+  display:none;margin-bottom:10px;align-items:center;gap:8px;
+}
+.cal-date-filter-bar.show{display:flex;}
+
+/* ── FILTER TABS ── */
+.mpick-btn{padding:7px 4px;border:none;border-radius:8px;background:#f0f4fa;
+  font-size:0.76rem;font-weight:700;color:var(--text);cursor:pointer;text-align:center;transition:0.15s;}
+.mpick-btn:hover{background:var(--orange);color:white;}
+.mpick-btn.active{background:var(--orange);color:white;}
+#monthPickerPopup.open{display:grid!important;}
+
+
+@media print{
+  .sidebar,.topbar,.btn-row,.btn-row *,.rp-actions,.cal-bar{display:none!important;}
+  .main-wrap{margin-left:0!important;}
+  .tab-page{display:block!important;}
+  .table-wrap{overflow:visible;border:none;}
+  .data-table{font-size:0.6rem;min-width:unset;}
+  .data-table th{background:#333!important;color:white!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+}
+/* ── MODERN REFRESH ── */
+:root{
+  --radius-sm:8px; --radius-md:12px; --radius-lg:16px;
+  --shadow-sm:0 1px 2px rgba(15,23,42,.06),0 1px 3px rgba(15,23,42,.04);
+  --shadow-md:0 4px 12px rgba(15,23,42,.08),0 2px 4px rgba(15,23,42,.04);
+  --shadow-lg:0 20px 40px -12px rgba(15,23,42,.18);
+  --ring:0 0 0 3px rgba(230,126,34,.18);
+}
+*{font-family:'Inter','Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased;}
+h1,h2,h3,.topbar-title,.sidebar-logo h2{font-family:'Space Grotesk','Inter',sans-serif;letter-spacing:-.01em;}
+body{background:linear-gradient(180deg,#eef2f7 0%,#e6ecf3 100%);}
+.sidebar{background:linear-gradient(180deg,#001a33 0%,#00264d 60%,#003257 100%);box-shadow:6px 0 32px rgba(0,20,50,.28);}
+.nav-item{border-radius:0 999px 999px 0;margin-right:10px;transition:all .18s ease;}
+.nav-item:hover{transform:translateX(2px);}
+.nav-item.active{box-shadow:inset 3px 0 0 #ffc107;}
+.topbar{backdrop-filter:saturate(140%) blur(8px);background:rgba(255,255,255,.85);border-bottom:1px solid rgba(15,23,42,.06);box-shadow:var(--shadow-sm);}
+button,.btn{border-radius:var(--radius-md)!important;transition:transform .15s ease,box-shadow .2s ease,background .2s ease;}
+button:hover,.btn:hover{transform:translateY(-1px);box-shadow:var(--shadow-md);}
+button:active,.btn:active{transform:translateY(0);}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none;box-shadow:var(--ring);}
+input,select,textarea{border-radius:var(--radius-sm)!important;transition:border-color .15s,box-shadow .15s;}
+.card,.dashboard-card,.stat-card,.section,.panel,table{border-radius:var(--radius-lg)!important;}
+table{overflow:hidden;box-shadow:var(--shadow-sm);}
+th{letter-spacing:.02em;text-transform:uppercase;font-size:.72rem;}
+tbody tr{transition:background .15s ease;}
+tbody tr:hover{background:rgba(230,126,34,.05);}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-thumb{background:rgba(0,38,77,.25);border-radius:999px;}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,38,77,.45);}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="bolt"><i class="fas fa-bolt"></i></div>
+    <h2>NTPC UNCHAHAR</h2>
+    <p>EMD Lighting Division</p>
+  </div>
+  <nav class="nav-menu">
+    <div class="nav-section-label">Main Menu</div>
+    <div class="nav-item active" data-tab="dashboard" onclick="showTab('dashboard')">
+      <i class="fas fa-chart-pie"></i> Dashboard
+    </div>
+    <div class="nav-item" data-tab="addentry" onclick="showTab('addentry')">
+      <i class="fas fa-plus-circle"></i> Add Entry
+    </div>
+    <div class="nav-item" data-tab="receipts" onclick="showTab('receipts')">
+      <i class="fas fa-file-invoice"></i> Receipt Record
+    </div>
+    <div class="nav-section-label" style="margin-top:12px;">Tools</div>
+    <div class="nav-item" onclick="exportToExcel()">
+      <i class="fas fa-file-excel"></i> Export Excel
+    </div>
+    <div class="nav-item" onclick="printAllRecords()">
+      <i class="fas fa-print"></i> Print Register
+    </div>
+  </nav>
+  <div class="sidebar-clock"><i class="fas fa-user" style="margin-right:6px;"></i><span>RAVI PRATAP</span><br><span id="liveClock" style="font-size:0.72rem;opacity:0.65;"></span></div>
+</div>
+
+<!-- ══ INTRO SPLASH SCREEN ══ -->
+<div id="introSplash">
+  <div class="splash-grid"></div>
+  <div class="splash-glow"></div>
+  <div class="splash-ribbon"></div>
+  <div class="splash-corner tl">⚡</div>
+  <div class="splash-corner br">N</div>
+
+  <div class="splash-bolt">⚡</div>
+
+  <div class="splash-title">NTPC <span>Unchahar</span></div>
+  <div class="splash-subtitle">Feroze Gandhi Thermal Power Station</div>
+
+  <div class="splash-divider"></div>
+
+  <div class="splash-tags">
+    <span class="splash-tag"><i class="fas fa-file-invoice-dollar"></i> Cash Purchase Register</span>
+    <span class="splash-tag"><i class="fas fa-shield-alt"></i> Secure · Local Storage</span>
+  </div>
+
+  <div class="splash-progress-wrap">
+    <div class="splash-progress-track">
+      <div class="splash-progress-bar" id="splashBar"></div>
+    </div>
+    <div class="splash-status" id="splashStatus">System initializing…</div>
+  </div>
+</div>
+
+<!-- MAIN WRAP -->
+<div class="main-wrap">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-title">NTPC Unchahar &nbsp;|&nbsp; <span id="topbarTabName">Dashboard</span></div>
+    <div class="topbar-right">
+      <div class="gs-bar" id="gsStatusBar"></div>
+      <div style="font-size:0.75rem;color:var(--sub);text-align:right;">
+        <div style="font-weight:700;color:var(--text);">Feroze Gandhi Unchahar</div>
+        <div>Thermal Power Station · UP 229406</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <!-- ══════════════════════════════════════════
+         TAB 1: DASHBOARD
+    ══════════════════════════════════════════ -->
+    <div class="tab-page active" id="tab-dashboard">
+
+      <!-- STAT CARDS -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="sc-icon sc-orange"><i class="fas fa-file-invoice"></i></div>
+          <h3>Total Invoices</h3>
+          <div class="stat-val" id="d-totalInv">0</div>
+          <div class="stat-sub">All invoice groups</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-icon sc-blue"><i class="fas fa-rupee-sign"></i></div>
+          <h3>Total Amount (₹)</h3>
+          <div class="stat-val" id="d-totalAmt">0</div>
+          <div class="stat-sub">Grand total (incl. GST)</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-icon sc-green"><i class="fas fa-percentage"></i></div>
+          <h3>Total GST Paid (₹)</h3>
+          <div class="stat-val" id="d-totalGst">0</div>
+          <div class="stat-sub">GST paid on all items</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-icon sc-red"><i class="fas fa-clock"></i></div>
+          <h3>Pending Bills</h3>
+          <div class="stat-val" id="d-pendCount">0</div>
+          <div class="stat-sub" id="d-pendAmt">₹0 outstanding</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-icon sc-purple"><i class="fas fa-calendar-check"></i></div>
+          <h3>This Month (₹)</h3>
+          <div class="stat-val" id="d-thisMonth">0</div>
+          <div class="stat-sub" id="d-thisMonthLabel">Current month</div>
+        </div>
+      </div>
+
+      <!-- CHART + PENDING ROW -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:22px;">
+
+        <!-- Bar Chart -->
+        <div class="section-card" style="margin-bottom:0;">
+          <h2><i class="fas fa-chart-bar"></i> Monthly Purchase (₹) — <span id="chartYear" style="color:var(--orange);"></span></h2>
+          <div class="chart-wrap">
+            <div class="bar-chart" id="barChart"></div>
+          </div>
+        </div>
+
+        <!-- Top Suppliers -->
+        <div class="section-card" style="margin-bottom:0;">
+          <h2><i class="fas fa-store"></i> Top Suppliers</h2>
+          <div id="topSuppliers">
+            <div class="empty-state"><i class="fas fa-store-slash"></i>No data</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PENDING BILLS -->
+      <div class="section-card" id="dash-pending-section" style="display:none;">
+        <h2 style="color:#c0392b;"><i class="fas fa-bell" style="animation:bellShake 1.4s infinite;display:inline-block;"></i> Pending Payment Bills
+          <span class="pending-badge" id="dash-pend-badge"></span>
+          <span class="pending-reminder" id="dash-pend-reminder" style="margin-left:auto;font-size:0.75rem;"></span>
+        </h2>
+        <div style="overflow-x:auto;">
+          <table class="ptable">
+            <thead><tr>
+              <th>#</th><th style="text-align:left;">Supplier</th><th>Invoice No.</th>
+              <th>Invoice Date</th><th>Pay Condition</th><th>Pay Mode</th>
+              <th>Amount (₹)</th><th style="text-align:left;">Remarks</th>
+            </tr></thead>
+            <tbody id="dash-pend-tbody"></tbody>
+            <tfoot><tr style="background:#fdecea;font-weight:800;">
+              <td colspan="6" style="text-align:right;padding:9px 12px;color:#c0392b;">TOTAL PENDING →</td>
+              <td id="dash-pend-total" style="text-align:center;color:#c0392b;"></td><td></td>
+            </tr></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- RECENT ENTRIES -->
+      <div class="section-card">
+        <h2><i class="fas fa-history"></i> Recent Entries (Last 10)</h2>
+        <div style="overflow-x:auto;">
+          <table class="recent-table">
+            <thead><tr>
+              <th>#</th><th>Entry Date</th><th>Inv No.</th><th style="text-align:left;">Supplier</th>
+              <th>Pay Mode</th><th>Pay Condition</th><th>Grand Total (₹)</th><th>Action</th>
+            </tr></thead>
+            <tbody id="recentTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- end dashboard -->
+
+
+    <!-- ══════════════════════════════════════════
+         TAB 2: ADD ENTRY
+    ══════════════════════════════════════════ -->
+    <div class="tab-page" id="tab-addentry">
+
+      <div class="section-card">
+        <div class="form-section-title"><i class="fas fa-file-invoice-dollar"></i> Invoice Details</div>
+        <div class="form-grid">
+          <div class="input-field"><label><i class="fas fa-calendar-plus"></i>Entry Date *</label><input type="date" id="entryDate"></div>
+          <div class="input-field"><label><i class="fas fa-calendar-check"></i>Invoice Date *</label><input type="date" id="invoiceDate"></div>
+          <div class="input-field"><label><i class="fas fa-hashtag"></i>Invoice No. / GEM No. *</label><input type="text" id="invoiceGemNo" placeholder="INV-001 / GEM/2025/001"></div>
+          <div class="input-field"><label><i class="fas fa-store"></i>Supplier / Shop Name *</label><input type="text" id="supplierName"></div>
+          <div class="input-field"><label><i class="fas fa-address-card"></i>Supplier Address</label><input type="text" id="supplierAddress"></div>
+          <div class="input-field"><label><i class="fas fa-mobile-alt"></i>Supplier Mobile</label><input type="text" id="supplierMobile" placeholder="9876543210"></div>
+          <div class="input-field"><label><i class="fas fa-user-tie"></i>Purchase By</label><input type="text" id="purchaseBy"></div>
+          <div class="input-field">
+            <label><i class="fas fa-file-invoice-dollar"></i>Payment Condition</label>
+            <select id="paymentCondition" onchange="onPayCondChange()">
+              <option value="">-- Select --</option>
+              <option value="OK">✓ OK — Payment Done</option>
+              <option value="Pending">⏱ Pending</option>
+              <option value="Immediate">Immediate</option>
+              <option value="15 Days">15 Days</option>
+              <option value="30 Days">30 Days</option>
+              <option value="Cash">Cash</option>
+            </select>
+          </div>
+          <div class="input-field">
+            <label><i class="fas fa-credit-card"></i>Payment Mode *</label>
+            <select id="paymentMode">
+              <option value="Imprest">Imprest</option>
+              <option value="GEM procurement">GEM procurement</option>
+              <option value="NOTESHEET">NOTESHEET</option>
+            </select>
+          </div>
+          <div class="input-field"><label><i class="fas fa-comment-dots"></i>Remarks</label><input type="text" id="remarksHeader"></div>
+        </div>
+
+        <div class="mat-section">
+          <div class="mat-section-title"><i class="fas fa-boxes"></i> Material Items (Multiple per Invoice)</div>
+          <div style="overflow-x:auto;">
+            <table class="mat-table" id="materialTable">
+              <thead>
+                <tr>
+                  <th style="width:30px;">#</th>
+                  <th>Material Description *</th>
+                  <th>Unit *</th>
+                  <th>HSN Code</th>
+                  <th>Rate (₹) *</th>
+                  <th>Qty *</th>
+                  <th>Subtotal (₹)</th>
+                  <th>GST (₹)</th>
+                  <th>Line Total (₹)</th>
+                  <th style="width:36px;"></th>
+                </tr>
+              </thead>
+              <tbody id="materialRows"></tbody>
+              <tfoot>
+                <tr class="mat-footer-row">
+                  <td colspan="6" style="text-align:right;">Invoice Grand Total →</td>
+                  <td id="footerSubtotal" style="text-align:center;color:var(--blue);">0.00</td>
+                  <td id="footerGst" style="text-align:center;color:var(--orange);">0.00</td>
+                  <td id="footerGrandTotal" style="text-align:center;color:var(--red);font-size:1rem;">0.00</td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          <button class="btn-add-mat" id="addMaterialBtn"><i class="fas fa-plus-circle"></i> Add Material Row</button>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" id="saveMultiInvoiceBtn"><i class="fas fa-save"></i> SAVE INVOICE</button>
+          <button class="btn btn-outline" id="clearFormBtn"><i class="fas fa-eraser"></i> CLEAR FORM</button>
+        </div>
+      </div>
+
+    </div><!-- end addentry -->
+
+
+    <!-- ══════════════════════════════════════════
+         TAB 3: RECEIPT RECORD
+    ══════════════════════════════════════════ -->
+    <div class="tab-page" id="tab-receipts">
+
+      <!-- Active date filter notice bar -->
+      <div class="cal-date-filter-bar" id="calDateFilterBar">
+        <i class="fas fa-calendar-check"></i>
+        <span id="calDateFilterText">Date filter active</span>
+        <button onclick="clearCalDateFilter()" style="margin-left:auto;background:none;border:none;
+          color:var(--orange);font-weight:800;cursor:pointer;font-size:0.8rem;">✕ Clear Filter</button>
+      </div>
+
+      <!-- ── INVOICE SEARCH BAR ── -->
+      <div style="background:white;border-radius:16px;border:1.5px solid var(--border);
+        box-shadow:0 3px 12px rgba(0,0,0,0.07);margin-bottom:14px;display:flex;
+        align-items:center;overflow:visible;gap:0;position:relative;">
+
+        <!-- LEFT ICON -->
+        <div style="background:var(--navy);color:white;padding:0 18px;display:flex;
+          align-items:center;justify-content:center;font-size:1.1rem;align-self:stretch;
+          border-radius:14px 0 0 14px;">
+          <i class="fas fa-file-invoice"></i>
+        </div>
+
+        <!-- LABEL -->
+        <div style="padding:0 14px;border-right:1.5px solid var(--border);align-self:stretch;
+          display:flex;align-items:center;">
+          <span style="font-size:0.75rem;font-weight:800;color:var(--text);text-transform:uppercase;
+            letter-spacing:1px;white-space:nowrap;">
+            <i class="fas fa-search" style="color:var(--orange);margin-right:5px;"></i>Invoice No. Search
+          </span>
+        </div>
+
+        <!-- SEARCH INPUT -->
+        <div style="flex:1;position:relative;padding:10px 14px;">
+          <input type="text" id="invSearchInput"
+            placeholder="Enter Invoice / GEM No..."
+            oninput="applyInvSearch()"
+            onkeydown="if(event.key==='Escape'){clearInvSearch()}"
+            style="width:100%;padding:9px 14px 9px 38px;border:2px solid var(--border);
+            border-radius:10px;font-size:0.9rem;font-weight:600;color:var(--text);outline:none;
+            transition:0.2s;background:#f8fafc;"
+            onfocus="this.style.borderColor='var(--orange)';this.style.background='white';this.style.boxShadow='0 0 0 3px rgba(230,126,34,0.12)'"
+            onblur="this.style.borderColor='var(--border)';this.style.background='#f8fafc';this.style.boxShadow='none'">
+          <i class="fas fa-search" style="position:absolute;left:24px;top:50%;transform:translateY(-50%);
+            color:var(--sub);font-size:0.85rem;pointer-events:none;"></i>
+        </div>
+
+        <!-- RESULT COUNT -->
+        <div style="padding:0 14px;border-left:1.5px solid var(--border);align-self:stretch;
+          display:flex;align-items:center;min-width:150px;">
+          <span id="calResultText" style="font-size:0.8rem;font-weight:700;color:var(--orange);">
+            📋 Total <span id="totalCountSpan">0</span> Invoice(s)
+          </span>
+        </div>
+
+        <!-- 📅 CALENDAR TOGGLE BUTTON + POPUP -->
+        <div class="cal-popup-container" id="calPopupContainer">
+
+          <button class="cal-toggle-btn" id="calToggleBtn" onclick="toggleMiniCal(event)">
+            <i class="fas fa-calendar-alt" style="font-size:1rem;"></i>
+            <span>Date Filter</span>
+            <i class="fas fa-chevron-down" id="calChevron"
+               style="font-size:0.6rem;opacity:0.7;transition:transform 0.2s;"></i>
+            <span class="cal-dot-badge" id="calDotBadge"></span>
+          </button>
+
+          <!-- ══ POPUP CALENDAR ══ -->
+          <div class="mini-cal-wrap" id="miniCalWrap" onclick="event.stopPropagation()">
+
+            <!-- Header: month nav -->
+            <div class="mini-cal-header">
+              <div>
+                <div class="mch-title" id="miniCalMonthTitle">May 2026</div>
+                <div class="mch-sub">📅 Select a date or enter manually</div>
+              </div>
+              <div class="mini-cal-nav">
+                <button onclick="miniCalNav(-1);event.stopPropagation();" title="Previous month">&#8249;</button>
+                <span class="mcn-label" id="miniCalMonthBtn"></span>
+                <button onclick="miniCalNav(1);event.stopPropagation();" title="Next month">&#8250;</button>
+              </div>
+            </div>
+
+            <!-- Manual date input row -->
+            <div class="cal-manual-row" onclick="event.stopPropagation()">
+              <label><i class="fas fa-keyboard" style="color:var(--orange);margin-right:4px;"></i>Enter date:</label>
+              <input type="date" id="calManualInput" class="cal-manual-input"
+                onkeydown="if(event.key==='Enter'){applyManualDate();event.stopPropagation();}"
+                onclick="event.stopPropagation()"
+                onchange="applyManualDate()"
+                title="Enter date manually (DD-MM-YYYY)">
+              <button class="cal-manual-go" onclick="applyManualDate();event.stopPropagation();">
+                <i class="fas fa-check"></i> Apply
+              </button>
+            </div>
+
+            <!-- Days header -->
+            <div class="mini-cal-body">
+              <div class="mini-cal-days-hdr">
+                <span>Su</span><span>Mo</span><span>Tu</span><span>We</span>
+                <span>Th</span><span>Fr</span><span>Sa</span>
+              </div>
+              <div class="mini-cal-grid" id="miniCalGrid"></div>
+            </div>
+
+            <!-- Footer -->
+            <div class="mini-cal-footer">
+              <span class="mini-cal-filter-info" id="miniCalInfo">📅 Select a date</span>
+              <div style="display:flex;gap:5px;">
+                <button class="mini-cal-today-btn"
+                  onclick="miniCalGoToday();event.stopPropagation();">Today</button>
+                <button class="mini-cal-clear"
+                  onclick="clearCalDateFilter();event.stopPropagation();">✕ Clear</button>
+              </div>
+            </div>
+
+          </div><!-- end mini-cal-wrap -->
+        </div><!-- end cal-popup-container -->
+
+        <!-- CLEAR + EXCEL + PRINT buttons -->
+        <div style="display:flex;align-items:center;gap:6px;padding:8px 12px;
+          border-left:1.5px solid var(--border);align-self:stretch;">
+          <button onclick="clearInvSearch()"
+            style="background:#f0f4fa;border:1.5px solid var(--border);border-radius:8px;
+            padding:7px 14px;font-weight:700;font-size:0.78rem;color:var(--sub);cursor:pointer;
+            white-space:nowrap;transition:0.2s;"
+            onmouseover="this.style.background='#e2e9f0'" onmouseout="this.style.background='#f0f4fa'">
+            ✕ Clear
+          </button>
+          <button class="btn btn-success" onclick="exportToExcel()" style="padding:7px 13px;font-size:0.78rem;">
+            <i class="fas fa-file-excel"></i> Excel
+          </button>
+          <button class="btn btn-dark" onclick="printAllRecords()" style="padding:7px 13px;font-size:0.78rem;">
+            <i class="fas fa-print"></i> Print
+          </button>
+        </div>
+      </div>
+
+      <!-- FILTERED TOTALS BAR -->
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;" id="filteredTotalsBar">
+        <div style="background:white;border-radius:12px;padding:10px 18px;border:1px solid var(--border);
+          display:flex;align-items:center;gap:10px;font-size:0.82rem;">
+          <i class="fas fa-file-invoice" style="color:var(--orange);"></i>
+          <span>Invoices: <strong id="tbl-invCount">0</strong></span>
+        </div>
+        <div style="background:white;border-radius:12px;padding:10px 18px;border:1px solid var(--border);
+          display:flex;align-items:center;gap:10px;font-size:0.82rem;">
+          <i class="fas fa-rupee-sign" style="color:var(--blue);"></i>
+          <span>Total: <strong id="tbl-total" style="color:var(--red);">₹0.00</strong></span>
+        </div>
+        <div style="background:white;border-radius:12px;padding:10px 18px;border:1px solid var(--border);
+          display:flex;align-items:center;gap:10px;font-size:0.82rem;">
+          <i class="fas fa-percentage" style="color:var(--green);"></i>
+          <span>GST: <strong id="tbl-gst" style="color:var(--orange);">₹0.00</strong></span>
+        </div>
+      </div>
+
+      <!-- DATA TABLE -->
+      <div class="table-wrap">
+        <table class="data-table" id="purchaseTable">
+          <thead>
+            <tr>
+              <th rowspan="2" style="vertical-align:middle;">#</th>
+              <th rowspan="2" style="vertical-align:middle;">Entry Date</th>
+              <th rowspan="2" style="vertical-align:middle;">Inv Date</th>
+              <th rowspan="2" style="vertical-align:middle;">Inv/GEM No</th>
+              <th rowspan="2" style="vertical-align:middle;">Supplier</th>
+              <th rowspan="2" style="vertical-align:middle;">Address</th>
+              <th rowspan="2" style="vertical-align:middle;">Mobile</th>
+              <th colspan="8" style="background:#2c6fa0;border-bottom:2px solid #ffc107;">Material Details</th>
+              <th rowspan="2" style="vertical-align:middle;">Purchase By</th>
+              <th rowspan="2" style="vertical-align:middle;">Pay Cond.</th>
+              <th rowspan="2" style="vertical-align:middle;">Pay Mode</th>
+              <th rowspan="2" style="vertical-align:middle;">Remarks</th>
+              <th rowspan="2" style="vertical-align:middle;">Inv. Total</th>
+              <th rowspan="2" style="vertical-align:middle;">Receipt</th>
+              <th rowspan="2" style="vertical-align:middle;">Actions</th>
+            </tr>
+            <tr>
+              <th style="background:#2c6fa0;">HSN</th>
+              <th style="background:#2c6fa0;">Material Desc</th>
+              <th style="background:#2c6fa0;">Unit</th>
+              <th style="background:#2c6fa0;">Rate</th>
+              <th style="background:#2c6fa0;">Qty</th>
+              <th style="background:#2c8a50;">Subtotal (₹)</th>
+              <th style="background:#a05c2c;">GST</th>
+              <th style="background:#2c6fa0;">Line Total</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr><td colspan="22" class="empty-state"><i class="fas fa-inbox"></i>No records found</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div><!-- end receipts -->
+
+  </div><!-- page-content -->
+
+  <div style="text-align:center;padding:14px 28px;font-size:0.72rem;color:var(--sub);
+    border-top:1px solid var(--border);background:white;margin-top:20px;">
+    NTPC Unchahar · EMD Lighting Cash Purchase Register · Feroze Gandhi Unchahar Thermal Power Station, PIN-229406
+  </div>
+
+</div><!-- main-wrap -->
+
+<!-- ══════════════════════════════════════════
+     RECEIPT MODAL (Individual Receipt View)
+══════════════════════════════════════════ -->
+<div class="receipt-modal" id="receiptModal">
+  <div class="receipt-paper">
+    <div class="rp-header">
+      <h1>NTPC UNCHAHAR — EMD LIGHTING DIVISION</h1>
+      <p>Feroze Gandhi Unchahar Thermal Power Station, Uttar Pradesh — 229406</p>
+      <p style="margin-top:6px;font-size:0.9rem;font-weight:700;">CASH PURCHASE RECEIPT</p>
+    </div>
+    <div class="rp-meta" id="rp-meta"></div>
+    <div style="overflow-x:auto;">
+      <table class="rp-mat-table">
+        <thead><tr>
+          <th>#</th><th>HSN</th><th style="text-align:left;">Material Description</th>
+          <th>Unit</th><th>Rate (₹)</th><th>Qty</th>
+          <th>Subtotal (₹)</th><th>GST (₹)</th><th>Line Total (₹)</th>
+        </tr></thead>
+        <tbody id="rp-mat-body"></tbody>
+      </table>
+    </div>
+    <div class="rp-totals">
+      <div class="rp-total-row"><span>Subtotal (before GST)</span><span id="rp-sub">₹0.00</span></div>
+      <div class="rp-total-row"><span>GST</span><span id="rp-gst" style="color:var(--orange);">₹0.00</span></div>
+      <div class="rp-total-row grand"><span>GRAND TOTAL</span><span id="rp-grand">₹0.00</span></div>
+    </div>
+    <div style="padding:12px 20px;font-size:0.75rem;color:var(--sub);border-top:1px solid var(--border);">
+      <strong>Payment:</strong> <span id="rp-paycond"></span> &nbsp;|&nbsp;
+      <strong>Mode:</strong> <span id="rp-paymode"></span> &nbsp;|&nbsp;
+      <strong>Remarks:</strong> <span id="rp-remarks"></span>
+    </div>
+    <div class="rp-footer">This is a computer generated document. NTPC Unchahar — System generated cash purchase receipt.</div>
+    <div class="rp-actions">
+      <button class="btn btn-dark" onclick="printReceipt()"><i class="fas fa-print"></i> Print Receipt</button>
+      <button class="btn btn-outline" onclick="closeReceiptModal()"><i class="fas fa-times"></i> Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  DATA MODEL & STORAGE
+// ══════════════════════════════════════════════
+let invoiceRecords = [];
+let editingId = null;
+const DELETE_PASSWORD = "ntpc2025";
+let calFilter = { month: 0, year: 0 };
+let calDateFilter = null; // "YYYY-MM-DD" or null
+const MONTH_NAMES = ["","January","February","March","April","May","June","July","August","September","October","November","December"];
+const GS_URL = "https://script.google.com/macros/s/AKfycbyyryAn5EK3mraz99yA4L5k_U3x1VFyGvj80NQolLEyh3zKwGtBYXkCTKDypoY2ok_X/exec";
+
+function getToday() {
+  let d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function fmtDate(d) { return d ? d.split('-').reverse().join('-') : ''; }
+function fmtAmt(n) { return '₹'+(+n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function escapeHtml(s) { if(!s) return ''; return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]); }
+
+// ── TABS ──
+function showTab(tab) {
+  const page = document.getElementById('tab-'+tab);
+  if(!page) return;
+  document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+  page.classList.add('active');
+  const labels = {dashboard:'Dashboard', addentry:'Add Entry', receipts:'Receipt Record'};
+  document.getElementById('topbarTabName').textContent = labels[tab] || tab;
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.toggle('active', n.getAttribute('data-tab') === tab);
+  });
+  if(tab==='dashboard') renderDashboard();
+  if(tab==='receipts') { renderReceiptTable(); miniCalRender(); }
+}
+
+// ── GOOGLE SHEET ──
+function gsToast(msg, color) { /* Google Sheet status messages hidden per request */ return; }
+function saveToLocal() {
+  localStorage.setItem('ntpc_cash_v2', JSON.stringify(invoiceRecords));
+  pushToSheet();
+}
+async function pushToSheet() {
+  if(GS_URL.includes('APNA_APPS')) { gsToast('⚠️ Sheet URL not set — saved locally only','#e67e22'); return; }
+  gsToast('⏳ Saving to Google Sheet...','#2c5282');
+  try {
+    const res = await fetch(GS_URL,{method:'POST',body:JSON.stringify({action:'save',records:invoiceRecords}),headers:{'Content-Type':'text/plain'}});
+    const d = await res.json();
+    if(d.status==='ok') gsToast('✅ Saved to Google Sheet!','#1f7b4d');
+    else gsToast('❌ Sheet error: '+(d.msg||''),'#c0392b');
+  } catch(e) { gsToast('❌ Network error — saved locally only','#c0392b'); }
+}
+async function loadFromGoogleSheet() {
+  if(GS_URL.includes('APNA_APPS')) return false;
+  try {
+    gsToast('⏳ Loading data from Google Sheet...','#2c5282');
+    const res = await fetch(GS_URL+'?action=load');
+    const d = await res.json();
+    if(d.status==='ok' && Array.isArray(d.records) && d.records.length>0) {
+      invoiceRecords = d.records;
+      localStorage.setItem('ntpc_cash_v2',JSON.stringify(invoiceRecords));
+      gsToast('✅ '+invoiceRecords.length+' records loaded from Google Sheet!','#1f7b4d');
+      return true;
+    }
+  } catch(e) { gsToast('⚠️ Could not load from Sheet — using local data','#e67e22'); }
+  return false;
+}
+async function syncFromSheet() {
+  gsToast('⏳ Syncing from Sheet...','#2c5282');
+  const ok = await loadFromGoogleSheet();
+  if(ok) { normalizeRecords(); sortRecords(); renderAll(); }
+}
+function normalizeRecords() {
+  if(!Array.isArray(invoiceRecords)) { invoiceRecords = []; return; }
+  invoiceRecords = invoiceRecords.filter(r => r && typeof r === 'object');
+  invoiceRecords.forEach(r => {
+    r.entryDate   = r.entryDate   || '';
+    r.invoiceDate = r.invoiceDate || '';
+    r.materials   = Array.isArray(r.materials) ? r.materials : [];
+    r.materials.forEach(m => {
+      m.rate      = +m.rate || 0;
+      m.qty       = +m.qty  || 0;
+      m.subtotal  = (m.subtotal !== undefined && m.subtotal !== null) ? (+m.subtotal || 0) : m.rate * m.qty;
+      m.gst       = +m.gst || 0;              // manual GST value kept as saved
+      m.lineTotal = (m.lineTotal !== undefined && m.lineTotal !== null) ? (+m.lineTotal || 0) : (m.subtotal + m.gst);
+      m.hsn = m.hsn || '—'; m.unit = m.unit || 'Nos'; m.desc = m.desc || '';
+    });
+    const g = +r.invoiceGrandTotal;
+    r.invoiceGrandTotal = isFinite(g) && g ? g : r.materials.reduce((a,m)=>a+(+m.lineTotal||0),0);
+  });
+}
+function sortRecords() {
+  invoiceRecords.sort((a,b)=>String(a.entryDate||'').localeCompare(String(b.entryDate||'')));
+}
+async function loadFromStorage() {
+  // 1) INSTANT: paint from local cache first — no network wait
+  const stored = localStorage.getItem('ntpc_cash_v2');
+  if(stored) { try { const p = JSON.parse(stored); invoiceRecords = Array.isArray(p) ? p : []; } catch(e) { invoiceRecords = []; } }
+  else invoiceRecords = [];
+  normalizeRecords(); sortRecords(); renderAll();
+
+  // 2) BACKGROUND: refresh from Google Sheet, re-render only if it returned data
+  try {
+    const fromSheet = await loadFromGoogleSheet();
+    if(fromSheet) { normalizeRecords(); sortRecords(); renderAll(); }
+  } catch(e) { /* offline — local data already shown */ }
+}
+
+// ── INVOICE SEARCH — BULLETPROOF ──
+let invSearchQuery = '';
+
+let _searchTimer = null;
+function applyInvSearch() {
+  var inputEl = document.getElementById('invSearchInput');
+  if(!inputEl) return;
+  invSearchQuery = inputEl.value.trim().toLowerCase();
+  clearTimeout(_searchTimer);
+  _searchTimer = setTimeout(renderReceiptTable, 160); // debounce = no lag while typing
+}
+
+function clearInvSearch() {
+  invSearchQuery = '';
+  var inputEl = document.getElementById('invSearchInput');
+  if(inputEl) { inputEl.value = ''; inputEl.focus(); }
+  renderReceiptTable();
+}
+
+function getFilteredRecords() {
+  var resEl = document.getElementById('calResultText');
+  var records = invoiceRecords;
+
+  // Calendar date filter
+  if(calDateFilter) {
+    records = records.filter(r =>
+      (r.entryDate && r.entryDate === calDateFilter) ||
+      (r.invoiceDate && r.invoiceDate === calDateFilter)
+    );
+  }
+
+  // If search box is empty — show all
+  if(!invSearchQuery || invSearchQuery === '') {
+    if(resEl) resEl.innerHTML = '📋 Total <b>' + records.length + '</b> Invoice(s)';
+    return records;
+  }
+
+  // Match against Invoice No.
+  var q = invSearchQuery;
+  var result = [];
+  for(var i = 0; i < records.length; i++) {
+    var inv = records[i];
+    var gemNo = String(inv.invoiceGemNo || '').toLowerCase().trim();
+    if(gemNo.indexOf(q) !== -1) {
+      result.push(inv);
+    }
+  }
+
+  var typedVal = document.getElementById('invSearchInput') ? document.getElementById('invSearchInput').value : q;
+  if(resEl) {
+    if(result.length > 0) {
+      resEl.innerHTML = '🔍 "<b>' + typedVal + '</b>" — <b style="color:green;">' + result.length + '</b> Invoice(s) found';
+    } else {
+      resEl.innerHTML = '⚠ "<b>' + typedVal + '</b>" — no invoice found';
+    }
+  }
+  return result;
+}
+
+// ── RENDER ALL ──
+function renderAll() { renderDashboard(); renderReceiptTable(); }
+
+// ══════════════════════════════════════════════
+//  DASHBOARD RENDER
+// ══════════════════════════════════════════════
+function isPending(val) {
+  if(!val) return false;
+  const v=val.toLowerCase().trim();
+  const okW=["ok","paid","done","clear","complete","payment done","cleared"];
+  if(okW.some(k=>v===k||v.startsWith(k))) return false;
+  return ["pending","pend","due","unpaid","outstanding","hold","wait","not paid"].some(k=>v.includes(k));
+}
+function renderDashboard() {
+  const total = invoiceRecords.reduce((s,r)=>s+(+r.invoiceGrandTotal||0),0);
+  const totalGst = invoiceRecords.reduce((s,r)=>s+(r.materials||[]).reduce((a,m)=>a+(+m.gst||0),0),0);
+  const pending = invoiceRecords.filter(r=>isPending(r.paymentCondition));
+  const pendAmt = pending.reduce((s,r)=>s+(+r.invoiceGrandTotal||0),0);
+  const now = new Date();
+  const thisMonthRecs = invoiceRecords.filter(r=>{
+    const parts = String(r.entryDate||'').split('-');
+    return parseInt(parts[1])===now.getMonth()+1 && parseInt(parts[0])===now.getFullYear();
+  });
+  const thisMonthAmt = thisMonthRecs.reduce((s,r)=>s+(+r.invoiceGrandTotal||0),0);
+
+  document.getElementById('d-totalInv').textContent = invoiceRecords.length;
+  document.getElementById('d-totalAmt').textContent = total.toFixed(2);
+  document.getElementById('d-totalGst').textContent = totalGst.toFixed(2);
+  document.getElementById('d-pendCount').textContent = pending.length;
+  document.getElementById('d-pendAmt').textContent = fmtAmt(pendAmt)+' outstanding';
+  document.getElementById('d-thisMonth').textContent = thisMonthAmt.toFixed(2);
+  document.getElementById('d-thisMonthLabel').textContent = MONTH_NAMES[now.getMonth()+1]+' '+now.getFullYear();
+
+  renderBarChart();
+  renderTopSuppliers();
+  renderDashPending(pending, pendAmt);
+  renderRecentTable();
+}
+
+function renderBarChart() {
+  const year = new Date().getFullYear();
+  document.getElementById('chartYear').textContent = year;
+  const monthly = Array(12).fill(0);
+  invoiceRecords.forEach(r => {
+    const parts = String(r.entryDate||'').split('-');
+    const mi = parseInt(parts[1]) - 1;
+    if(parseInt(parts[0])===year && mi>=0 && mi<12) monthly[mi]+=(+r.invoiceGrandTotal||0);
+  });
+  const max = Math.max(...monthly,1);
+  const chart = document.getElementById('barChart');
+  const mLabels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  chart.innerHTML = '';
+  monthly.forEach((val,i)=>{
+    const h = Math.round((val/max)*150);
+    const col = document.createElement('div');
+    col.className='bar-col';
+    col.innerHTML=`
+      <div class="bar" style="height:${h}px;opacity:${val>0?1:0.2};">
+        <div class="bar-tip">${fmtAmt(val)}</div>
+      </div>
+      <div class="bar-label">${mLabels[i]}</div>
+      <div class="bar-amt">${val>0?fmtAmt(val):''}</div>`;
+    chart.appendChild(col);
+  });
+}
+
+function renderTopSuppliers() {
+  const map = {};
+  invoiceRecords.forEach(r=>{
+    const s=r.supplierName||'Unknown';
+    if(!map[s]) map[s]={name:s,total:0,count:0};
+    map[s].total+=(+r.invoiceGrandTotal||0); map[s].count++;
+  });
+  const sorted = Object.values(map).sort((a,b)=>b.total-a.total).slice(0,6);
+  const el = document.getElementById('topSuppliers');
+  if(sorted.length===0){ el.innerHTML='<div class="empty-state"><i class="fas fa-store-slash"></i>No data</div>'; return; }
+  const maxAmt = sorted[0].total||1;
+  el.innerHTML = sorted.map(s=>`
+    <div style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:3px;">
+        <span style="font-weight:700;color:var(--text);">${escapeHtml(s.name)}</span>
+        <span style="color:var(--orange);font-weight:700;">${fmtAmt(s.total)}</span>
+      </div>
+      <div style="background:#e2e9f0;border-radius:20px;height:7px;overflow:hidden;">
+        <div style="height:100%;background:linear-gradient(90deg,var(--orange),var(--orange2));
+          border-radius:20px;width:${Math.round((s.total/maxAmt)*100)}%;transition:width 0.5s;"></div>
+      </div>
+      <div style="font-size:0.67rem;color:var(--sub);margin-top:2px;">${s.count} invoice(s)</div>
+    </div>`).join('');
+}
+
+function renderDashPending(pending, pendAmt) {
+  const sec = document.getElementById('dash-pending-section');
+  if(pending.length===0){ sec.style.display='none'; return; }
+  sec.style.display='block';
+  document.getElementById('dash-pend-badge').textContent = pending.length+' Bill'+(pending.length>1?'s':'')+' Pending';
+  document.getElementById('dash-pend-reminder').textContent = '🔔 Reminder: Please pay immediately!';
+  document.getElementById('dash-pend-total').textContent = fmtAmt(pendAmt);
+  const tbody = document.getElementById('dash-pend-tbody');
+  tbody.innerHTML = pending.map((inv,i)=>`
+    <tr>
+      <td><strong style="color:#e74c3c;">${i+1}</strong></td>
+      <td style="text-align:left;font-weight:600;">${escapeHtml(inv.supplierName)}</td>
+      <td><strong>${escapeHtml(inv.invoiceGemNo)}</strong></td>
+      <td>${fmtDate(inv.invoiceDate)}</td>
+      <td><span class="pay-badge pay-pend">${escapeHtml(inv.paymentCondition)}</span></td>
+      <td>${escapeHtml(inv.paymentMode)}</td>
+      <td><strong style="color:#c0392b;">${fmtAmt(inv.invoiceGrandTotal)}</strong></td>
+      <td style="text-align:left;color:#777;">${escapeHtml(inv.remarks)}</td>
+    </tr>`).join('');
+}
+
+function renderRecentTable() {
+  const tbody = document.getElementById('recentTableBody');
+  const recent = invoiceRecords.slice(-10).reverse();
+  if(recent.length===0){
+    tbody.innerHTML='<tr><td colspan="8" class="empty-state"><i class="fas fa-inbox"></i>No records</td></tr>'; return;
+  }
+  tbody.innerHTML = recent.map((inv,i)=>`
+    <tr>
+      <td>${i+1}</td>
+      <td>${fmtDate(inv.entryDate)}</td>
+      <td><strong>${escapeHtml(inv.invoiceGemNo)}</strong></td>
+      <td style="text-align:left;font-weight:600;">${escapeHtml(inv.supplierName)}</td>
+      <td>${escapeHtml(inv.paymentMode)}</td>
+      <td><span class="pay-badge ${isPending(inv.paymentCondition)?'pay-pend':'pay-ok'}">${escapeHtml(inv.paymentCondition)}</span></td>
+      <td><strong style="color:var(--red);">${fmtAmt(inv.invoiceGrandTotal)}</strong></td>
+      <td>
+        <button class="action-btn edit-btn" data-act="edit" data-i="${i}" title="Edit"><i class="fas fa-edit"></i></button>
+        <button class="action-btn" style="color:#1f7b4d;" data-act="receipt" data-i="${i}" title="Receipt"><i class="fas fa-receipt"></i></button>
+      </td>
+    </tr>`).join('');
+  tbody.querySelectorAll('button[data-act]').forEach(b=>{
+    const inv = recent[+b.getAttribute('data-i')];
+    b.onclick = () => b.getAttribute('data-act')==='edit' ? loadInvoiceForEdit(inv) : openReceipt(inv);
+  });
+}
+
+// ══════════════════════════════════════════════
+//  RECEIPT TABLE RENDER
+// ══════════════════════════════════════════════
+function renderReceiptTable() {
+  const filtered = getFilteredRecords();
+  const liveTbody = document.getElementById('tableBody');
+  if(!liveTbody) return;
+  // build detached, swap once -> avoids per-row reflow (big speed win on large data)
+  const tbody = document.createElement('tbody');
+  tbody.id = 'tableBody';
+  const commit = () => liveTbody.parentNode.replaceChild(tbody, liveTbody);
+
+  // Update filtered totals bar
+  const tot = filtered.reduce((s,r)=>s+(+r.invoiceGrandTotal||0),0);
+  const gst = filtered.reduce((s,r)=>s+(r.materials||[]).reduce((a,m)=>a+(+m.gst||0),0),0);
+  document.getElementById('tbl-invCount').textContent = filtered.length;
+  document.getElementById('tbl-total').textContent = fmtAmt(tot);
+  document.getElementById('tbl-gst').textContent = fmtAmt(gst);
+
+  // Calendar result text — handled in getFilteredRecords()
+
+  if(filtered.length===0){
+    tbody.innerHTML='<tr><td colspan="22" class="empty-state"><i class="fas fa-inbox"></i>No records found</td></tr>'; commit(); return;
+  }
+
+  filtered.forEach((inv,invIdx)=>{
+    const gc = invIdx%2===0?'inv-even':'inv-odd';
+    const mc = inv.materials.length;
+    inv.materials.forEach((mat,mi)=>{
+      const row = tbody.insertRow();
+      row.className=gc;
+      if(mi===0) row.classList.add('grp-first');
+      if(mi===mc-1) row.classList.add('grp-last');
+
+      const addM = (html,cls='mc')=>{
+        let td=document.createElement('td'); td.className=cls; td.rowSpan=mc; td.innerHTML=html; row.appendChild(td);
+      };
+      if(mi===0){
+        addM(`<strong>${invIdx+1}</strong>`);
+        addM(fmtDate(inv.entryDate));
+        addM(fmtDate(inv.invoiceDate));
+        addM(`<strong>${escapeHtml(inv.invoiceGemNo)}</strong>`);
+        addM(escapeHtml(inv.supplierName));
+        addM(escapeHtml(inv.supplierAddress));
+        addM(escapeHtml(inv.supplierMobile));
+      }
+      let c; 
+      c=row.insertCell(); c.textContent=mat.hsn;
+      c=row.insertCell(); c.textContent=mat.desc; c.style.textAlign='left'; c.style.fontWeight='600';
+      c=row.insertCell(); c.textContent=mat.unit;
+      c=row.insertCell(); c.textContent='₹'+(+mat.rate||0).toFixed(2);
+      c=row.insertCell(); c.textContent=mat.qty;
+      c=row.insertCell(); c.textContent='₹'+(mat.subtotal||0).toFixed(2); c.style.color='#2c5282';
+      c=row.insertCell(); c.innerHTML=`<span style="color:var(--orange);font-weight:600;">₹${(mat.gst||0).toFixed(2)}</span>`;
+      c=row.insertCell(); c.innerHTML=`<strong>₹${(+mat.lineTotal||0).toFixed(2)}</strong>`; c.style.color='#1f7b4d';
+
+      if(mi===0){
+        addM(escapeHtml(inv.purchaseBy));
+        addM(`<span class="pay-badge ${isPending(inv.paymentCondition)?'pay-pend':'pay-ok'}">${escapeHtml(inv.paymentCondition)}</span>`);
+        addM(escapeHtml(inv.paymentMode));
+        addM(escapeHtml(inv.remarks));
+        addM(`<strong style="color:var(--red);">${fmtAmt(inv.invoiceGrandTotal)}</strong><br><small style="color:#666;">${mc} item(s)</small>`);
+        // Receipt button
+        let rtd=document.createElement('td'); rtd.className='mc'; rtd.rowSpan=mc;
+        let rb=document.createElement('button'); rb.className='action-btn'; rb.style.color='#1f7b4d'; rb.title='View Receipt';
+        rb.innerHTML='<i class="fas fa-receipt"></i>';
+        rb.onclick=(function(i){return function(){openReceipt(i);};})(inv);
+        rtd.appendChild(rb); row.appendChild(rtd);
+        // Action buttons
+        let atd=document.createElement('td'); atd.className='mc'; atd.rowSpan=mc;
+        let eb=document.createElement('button'); eb.className='action-btn edit-btn'; eb.title='Edit';
+        eb.innerHTML='<i class="fas fa-edit"></i>';
+        eb.onclick=(function(i){return function(){loadInvoiceForEdit(i);};})(inv);
+        let db=document.createElement('button'); db.className='action-btn delete-btn'; db.title='Delete';
+        db.innerHTML='<i class="fas fa-trash-alt"></i>';
+        db.onclick=(function(id){return function(){deleteInvoice(id);};})(inv.id);
+        atd.appendChild(eb); atd.appendChild(db); row.appendChild(atd);
+      }
+    });
+  });
+  commit();
+}
+
+// ══════════════════════════════════════════════
+//  RECEIPT MODAL
+// ══════════════════════════════════════════════
+let currentReceiptInv = null;
+function openReceipt(inv) {
+  if(!inv) return;
+  currentReceiptInv = inv;
+  // Meta info
+  document.getElementById('rp-meta').innerHTML = `
+    <div class="rp-meta-block">
+      <div class="rp-meta-label">Invoice / GEM No.</div>
+      <div class="rp-meta-val">${escapeHtml(inv.invoiceGemNo)}</div>
+    </div>
+    <div class="rp-meta-block">
+      <div class="rp-meta-label">Supplier Name</div>
+      <div class="rp-meta-val">${escapeHtml(inv.supplierName)}</div>
+    </div>
+    <div class="rp-meta-block">
+      <div class="rp-meta-label">Entry Date</div>
+      <div class="rp-meta-val">${fmtDate(inv.entryDate)}</div>
+    </div>
+    <div class="rp-meta-block">
+      <div class="rp-meta-label">Invoice Date</div>
+      <div class="rp-meta-val">${fmtDate(inv.invoiceDate)}</div>
+    </div>
+    <div class="rp-meta-block">
+      <div class="rp-meta-label">Supplier Address</div>
+      <div class="rp-meta-val">${escapeHtml(inv.supplierAddress)}</div>
+    </div>
+    <div class="rp-meta-block">
+      <div class="rp-meta-label">Mobile / Purchase By</div>
+      <div class="rp-meta-val">${escapeHtml(inv.supplierMobile)} &nbsp;|&nbsp; ${escapeHtml(inv.purchaseBy)}</div>
+    </div>
+  `;
+  // Materials
+  const matBody = document.getElementById('rp-mat-body');
+  let sub=0,gst=0;
+  matBody.innerHTML = inv.materials.map((m,i)=>{
+    sub+=(m.subtotal||0); gst+=(m.gst||0);
+    return `<tr>
+      <td>${i+1}</td>
+      <td>${escapeHtml(m.hsn)}</td>
+      <td style="text-align:left;font-weight:600;">${escapeHtml(m.desc)}</td>
+      <td>${escapeHtml(m.unit)}</td>
+      <td>₹${m.rate.toFixed(2)}</td>
+      <td>${m.qty}</td>
+      <td>₹${(m.subtotal||0).toFixed(2)}</td>
+      <td style="color:var(--orange);">₹${(m.gst||0).toFixed(2)}</td>
+      <td><strong>₹${m.lineTotal.toFixed(2)}</strong></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('rp-sub').textContent = fmtAmt(sub);
+  document.getElementById('rp-gst').textContent = fmtAmt(gst);
+  document.getElementById('rp-grand').textContent = fmtAmt(inv.invoiceGrandTotal);
+  document.getElementById('rp-paycond').textContent = inv.paymentCondition;
+  document.getElementById('rp-paymode').textContent = inv.paymentMode;
+  document.getElementById('rp-remarks').textContent = inv.remarks;
+  document.getElementById('receiptModal').classList.add('open');
+}
+function closeReceiptModal() { document.getElementById('receiptModal').classList.remove('open'); }
+function printReceipt() {
+  if(!currentReceiptInv) return;
+  const inv = currentReceiptInv;
+  let sub=0,gst=0;
+  const matRows = inv.materials.map((m,i)=>{
+    sub+=(m.subtotal||0); gst+=(m.gst||0);
+    return `<tr>
+      <td>${i+1}</td><td>${escapeHtml(m.hsn)}</td>
+      <td style="text-align:left;">${escapeHtml(m.desc)}</td>
+      <td>${escapeHtml(m.unit)}</td><td>₹${m.rate.toFixed(2)}</td><td>${m.qty}</td>
+      <td>₹${(m.subtotal||0).toFixed(2)}</td>
+      <td>₹${(m.gst||0).toFixed(2)}</td>
+      <td><strong>₹${m.lineTotal.toFixed(2)}</strong></td>
+    </tr>`;
+  }).join('');
+  const win=window.open('','_blank'); if(!win){alert('Please allow pop-ups.');return;}
+  win.document.write(`<!DOCTYPE html><html><head><title>Receipt - ${escapeHtml(inv.invoiceGemNo)}</title>
+  <style>
+    body{font-family:Segoe UI,Arial;margin:20px;font-size:0.78rem;}
+    .header{text-align:center;margin-bottom:14px;background:#00264d;color:white;padding:16px;}
+    .header h1{font-size:1.1rem;} .header p{opacity:0.85;}
+    .meta{display:grid;grid-template-columns:1fr 1fr;border:1px solid #ccc;margin-bottom:12px;}
+    .meta-cell{padding:8px 12px;border-right:1px solid #ccc;border-bottom:1px solid #ccc;}
+    .meta-label{font-size:0.65rem;text-transform:uppercase;color:#666;font-weight:700;}
+    .meta-val{font-weight:700;font-size:0.9rem;}
+    table{border-collapse:collapse;width:100%;}
+    th,td{border:1px solid #ccc;padding:6px 5px;text-align:center;vertical-align:middle;}
+    th{background:#00264d;color:white;font-size:0.7rem;}
+    tr:nth-child(even) td{background:#f5f5f5;}
+    .totals{margin-top:10px;border:1px solid #ccc;padding:12px;text-align:right;}
+    .totals div{margin:3px 0;}
+    .grand{font-size:1rem;font-weight:800;color:#c0392b;border-top:2px solid #ccc;padding-top:6px;margin-top:6px;}
+    @media print{th{background:#333!important;color:white!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+  </style></head><body>
+  <div class="header">
+    <h1>NTPC UNCHAHAR — EMD LIGHTING DIVISION</h1>
+    <p>Feroze Gandhi Unchahar Thermal Power Station, Uttar Pradesh — 229406</p>
+    <p style="font-size:1rem;font-weight:700;margin-top:6px;">CASH PURCHASE RECEIPT</p>
+  </div>
+  <div class="meta">
+    <div class="meta-cell"><div class="meta-label">Invoice / GEM No.</div><div class="meta-val">${escapeHtml(inv.invoiceGemNo)}</div></div>
+    <div class="meta-cell"><div class="meta-label">Supplier Name</div><div class="meta-val">${escapeHtml(inv.supplierName)}</div></div>
+    <div class="meta-cell"><div class="meta-label">Entry Date</div><div class="meta-val">${fmtDate(inv.entryDate)}</div></div>
+    <div class="meta-cell"><div class="meta-label">Invoice Date</div><div class="meta-val">${fmtDate(inv.invoiceDate)}</div></div>
+    <div class="meta-cell"><div class="meta-label">Address</div><div class="meta-val">${escapeHtml(inv.supplierAddress)}</div></div>
+    <div class="meta-cell"><div class="meta-label">Purchase By</div><div class="meta-val">${escapeHtml(inv.purchaseBy)}</div></div>
+    <div class="meta-cell"><div class="meta-label">Payment Condition</div><div class="meta-val">${escapeHtml(inv.paymentCondition)}</div></div>
+    <div class="meta-cell"><div class="meta-label">Payment Mode</div><div class="meta-val">${escapeHtml(inv.paymentMode)}</div></div>
+  </div>
+  <table>
+    <thead><tr><th>#</th><th>HSN</th><th>Material Description</th><th>Unit</th><th>Rate (₹)</th><th>Qty</th><th>Subtotal (₹)</th><th>GST (₹)</th><th>Line Total (₹)</th></tr></thead>
+    <tbody>${matRows}</tbody>
+  </table>
+  <div class="totals">
+    <div>Subtotal (before GST): <strong>₹${sub.toFixed(2)}</strong></div>
+    <div>GST: <strong style="color:#c0392b;">₹${gst.toFixed(2)}</strong></div>
+    <div class="grand">GRAND TOTAL: ₹${inv.invoiceGrandTotal.toFixed(2)}</div>
+  </div>
+  <p style="margin-top:10px;font-size:0.68rem;color:#888;text-align:center;">Remarks: ${escapeHtml(inv.remarks)} | Computer generated document. NTPC Unchahar — ${new Date().toLocaleString('en-IN')}</p>
+  </body></html>`);
+  win.document.close(); setTimeout(()=>win.print(),400);
+}
+
+// ══════════════════════════════════════════════
+//  FORM — ADD ENTRY
+// ══════════════════════════════════════════════
+function updateFooterTotals() {
+  let rows=document.querySelectorAll('#materialRows .mat-row');
+  let sub=0,gst=0,grand=0;
+  rows.forEach(r=>{
+    sub+=parseFloat(r.querySelector('.mat-subtotal').value)||0;
+    gst+=parseFloat(r.querySelector('.mat-gst').value)||0;
+    grand+=parseFloat(r.querySelector('.mat-line-total').value)||0;
+  });
+  document.getElementById('footerSubtotal').textContent=sub.toFixed(2);
+  document.getElementById('footerGst').textContent=gst.toFixed(2);
+  document.getElementById('footerGrandTotal').textContent=grand.toFixed(2);
+}
+function updateMaterialRow(row, manualGst=false) {
+  let rate=parseFloat(row.querySelector('.mat-rate').value)||0;
+  let qty=parseFloat(row.querySelector('.mat-qty').value)||0;
+  let sub=rate*qty;
+  row.querySelector('.mat-subtotal').value=sub.toFixed(2);
+  let gst;
+  if(manualGst){
+    // user typed GST manually — keep their value as-is
+    gst=parseFloat(row.querySelector('.mat-gst').value)||0;
+  } else {
+    // auto-calculate GST @18% of subtotal
+    gst=sub*0.18;
+    row.querySelector('.mat-gst').value=gst.toFixed(2);
+  }
+  let total=sub+gst;
+  row.querySelector('.mat-line-total').value=total.toFixed(2);
+  updateFooterTotals();
+}
+function attachRowEvents(row, manualGst=false) {
+  row.querySelector('.mat-rate').addEventListener('input',()=>updateMaterialRow(row));
+  row.querySelector('.mat-qty').addEventListener('input',()=>updateMaterialRow(row));
+  row.querySelector('.mat-gst').addEventListener('input',()=>updateMaterialRow(row,true));
+  updateMaterialRow(row, manualGst);
+  row.querySelector('.remove-row').addEventListener('click',()=>{
+    if(document.querySelectorAll('#materialRows .mat-row').length>1){row.remove();updateFooterTotals();}
+    else alert('At least one material row is required.');
+  });
+}
+function addMaterialRow(desc='',unit='Nos',hsn='',rate=0,qty=1,gst=null) {
+  const tbody=document.getElementById('materialRows');
+  const num=tbody.querySelectorAll('.mat-row').length+1;
+  const tr=document.createElement('tr'); tr.className='mat-row';
+  const gstVal = gst!==null && gst!==undefined ? Number(gst).toFixed(2) : '';
+  tr.innerHTML=`
+    <td style="text-align:center;font-weight:700;color:var(--orange);">${num}</td>
+    <td><input type="text" class="mat-desc" value="${escapeHtml(desc)}" placeholder="Material description"></td>
+    <td><input type="text" class="mat-unit" value="${escapeHtml(unit)}"></td>
+    <td><input type="text" class="mat-hsn" value="${escapeHtml(hsn)}"></td>
+    <td><input type="number" class="mat-rate" step="any" value="${rate}"></td>
+    <td><input type="number" class="mat-qty" step="any" value="${qty}"></td>
+    <td><input type="text" class="mat-subtotal" readonly style="background:#f0f3f8;text-align:center;"></td>
+    <td><input type="number" class="mat-gst" step="any" value="${gstVal}" title="Auto-calculated @18%, but you can edit it manually" style="background:#fff3e0;text-align:center;color:var(--orange);font-weight:700;border:1.5px solid #f0c27b;"></td>
+    <td><input type="text" class="mat-line-total" readonly style="background:#e8f5e9;text-align:center;font-weight:700;color:var(--green);"></td>
+    <td><button type="button" class="action-btn delete-btn remove-row"><i class="fas fa-trash-alt"></i></button></td>`;
+  tbody.appendChild(tr);
+  attachRowEvents(tr, gst!==null && gst!==undefined);
+}
+function getMaterialRowsData() {
+  let rows=document.querySelectorAll('#materialRows .mat-row'); let items=[];
+  for(let row of rows){
+    let desc=row.querySelector('.mat-desc').value.trim(); if(!desc) continue;
+    let unit=row.querySelector('.mat-unit').value.trim()||'Nos';
+    let hsn=row.querySelector('.mat-hsn').value.trim();
+    let rate=parseFloat(row.querySelector('.mat-rate').value)||0;
+    let qty=parseFloat(row.querySelector('.mat-qty').value)||0;
+    if(rate<=0||qty<=0){alert(`Material "${desc}" 's rate or quantity cannot be 0.`);return null;}
+    let sub=rate*qty;
+    let gst=parseFloat(row.querySelector('.mat-gst').value)||0; // respects manual edits, else auto @18%
+    items.push({hsn:hsn||'—',desc,unit,rate,qty,subtotal:sub,gst,lineTotal:sub+gst});
+  }
+  if(items.length===0){alert('At least one material is required.');return null;}
+  return items;
+}
+function clearForm() {
+  document.getElementById('entryDate').value=getToday();
+  ['invoiceDate','invoiceGemNo','supplierName','supplierAddress','supplierMobile','purchaseBy','remarksHeader'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('paymentCondition').selectedIndex=0;
+  document.getElementById('paymentMode').selectedIndex=0;
+  document.getElementById('materialRows').innerHTML='';
+  addMaterialRow();
+  editingId=null;
+  const btn=document.getElementById('saveMultiInvoiceBtn');
+  btn.innerHTML='<i class="fas fa-save"></i> SAVE INVOICE';
+  btn.style.background='var(--orange)';
+  updateFooterTotals();
+}
+function saveMultiInvoice() {
+  const entryDate=document.getElementById('entryDate').value;
+  const invoiceDate=document.getElementById('invoiceDate').value;
+  const invoiceGemNo=document.getElementById('invoiceGemNo').value.trim();
+  const supplierName=document.getElementById('supplierName').value.trim();
+  if(!entryDate||!invoiceDate||!invoiceGemNo||!supplierName){alert('❌ Required: Entry Date, Invoice Date, Invoice/GEM No., Supplier Name');return;}
+  const materials=getMaterialRowsData(); if(!materials) return;
+  const header={
+    entryDate,invoiceDate,invoiceGemNo,supplierName,
+    supplierAddress:document.getElementById('supplierAddress').value||'—',
+    supplierMobile:document.getElementById('supplierMobile').value||'—',
+    purchaseBy:document.getElementById('purchaseBy').value||'—',
+    paymentCondition:document.getElementById('paymentCondition').value||'—',
+    paymentMode:document.getElementById('paymentMode').value,
+    remarks:document.getElementById('remarksHeader').value||'—'
+  };
+  const grand=materials.reduce((s,m)=>s+m.lineTotal,0);
+  if(editingId!==null){
+    const idx=invoiceRecords.findIndex(r=>r.id===editingId);
+    if(idx!==-1) invoiceRecords[idx]={...invoiceRecords[idx],...header,materials,invoiceGrandTotal:grand};
+    alert('✅ Record updated!'); editingId=null;
+  } else {
+    invoiceRecords.push({id:Date.now()+Math.random(),...header,materials,invoiceGrandTotal:grand});
+    alert(`✅ Invoice saved with ${materials.length} material(s)!`);
+  }
+  normalizeRecords(); sortRecords();
+  saveToLocal(); renderAll(); clearForm();
+  showTab('receipts');
+}
+function deleteInvoice(id){
+  if(prompt('🔐 Enter delete password:')===DELETE_PASSWORD){
+    invoiceRecords=invoiceRecords.filter(r=>r.id!==id);
+    saveToLocal(); renderAll(); alert('Record deleted.');
+  } else alert('❌ Incorrect password!');
+}
+function loadInvoiceForEdit(inv){
+  if(!inv) return;
+  clearForm();
+  document.getElementById('entryDate').value=inv.entryDate;
+  document.getElementById('invoiceDate').value=inv.invoiceDate;
+  document.getElementById('invoiceGemNo').value=inv.invoiceGemNo;
+  document.getElementById('supplierName').value=inv.supplierName;
+  document.getElementById('supplierAddress').value=inv.supplierAddress;
+  document.getElementById('supplierMobile').value=inv.supplierMobile;
+  document.getElementById('purchaseBy').value=inv.purchaseBy;
+  document.getElementById('paymentCondition').value=inv.paymentCondition;
+  document.getElementById('paymentMode').value=inv.paymentMode;
+  document.getElementById('remarksHeader').value=inv.remarks;
+  document.getElementById('materialRows').innerHTML='';
+  inv.materials.forEach(m=>addMaterialRow(m.desc,m.unit,m.hsn==='—'?'':m.hsn,m.rate,m.qty,m.gst));
+  editingId=inv.id;
+  const btn=document.getElementById('saveMultiInvoiceBtn');
+  btn.innerHTML='<i class="fas fa-edit"></i> UPDATE INVOICE';
+  btn.style.background='#2c5282';
+  showTab('addentry');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function onPayCondChange(){ renderDashboard(); }
+
+// ══════════════════════════════════════════════
+//  EXPORT & PRINT
+// ══════════════════════════════════════════════
+function exportToExcel(){
+  const data=getFilteredRecords(); if(data.length===0){alert('No data available to export.');return;}
+  const rows=[['#','Entry Date','Invoice Date','Invoice/GEM No','Supplier','Address','Mobile','HSN','Material','Unit','Rate','Qty','Subtotal','GST','Line Total','Grand Total','Purchase By','Pay Condition','Pay Mode','Remarks']];
+  let n=1;
+  data.forEach(inv=>{
+    inv.materials.forEach((m,i)=>{
+      rows.push([i===0?n:'',i===0?inv.entryDate:'',i===0?inv.invoiceDate:'',i===0?inv.invoiceGemNo:'',i===0?inv.supplierName:'',i===0?inv.supplierAddress:'',i===0?inv.supplierMobile:'',
+        m.hsn,m.desc,m.unit,m.rate,m.qty,m.subtotal.toFixed(2),m.gst.toFixed(2),m.lineTotal.toFixed(2),
+        i===0?inv.invoiceGrandTotal.toFixed(2):'',i===0?inv.purchaseBy:'',i===0?inv.paymentCondition:'',i===0?inv.paymentMode:'',i===0?inv.remarks:'']);
+    }); n++;
+  });
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'NTPC_Cash_Purchase');
+  XLSX.writeFile(wb,`NTPC_CashPurchase_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+function printAllRecords(){
+  const data=getFilteredRecords(); if(data.length===0){alert('No records available to print.');return;}
+  let rows='';
+  data.forEach((inv,invIdx)=>{
+    const bg=invIdx%2===0?'#f0f6ff':'#fff'; const mc=inv.materials.length;
+    inv.materials.forEach((mat,mi)=>{
+      rows+=`<tr style="background:${bg};${mi===0?'border-top:2px solid #1e4663;':''}${mi===mc-1?'border-bottom:2px solid #1e4663;':''}">`;
+      if(mi===0){
+        rows+=`<td rowspan="${mc}" style="vertical-align:middle;text-align:center;font-weight:700;">${invIdx+1}</td>`;
+        rows+=`<td rowspan="${mc}" style="vertical-align:middle;">${fmtDate(inv.entryDate)}</td>`;
+        rows+=`<td rowspan="${mc}" style="vertical-align:middle;">${fmtDate(inv.invoiceDate)}</td>`;
+        rows+=`<td rowspan="${mc}" style="vertical-align:middle;font-weight:700;">${escapeHtml(inv.invoiceGemNo)}</td>`;
+        rows+=`<td rowspan="${mc}" style="vertical-align:middle;">${escapeHtml(inv.supplierName)}</td>`;
+        rows+=`<td rowspan="${mc}" style="vertical-align:middle;">${escapeHtml(inv.supplierAddress)}</td>`;
+        rows+=`<td rowspan="${mc}" style="vertical-align:middle;">${escapeHtml(inv.supplierMobile)}</td>`;
+      }
+      rows+=`<td>${escapeHtml(mat.hsn)}</td>`;
+      rows+=`<td style="text-align:left;font-weight:600;">${escapeHtml(mat.desc)}</td>`;
+      rows+=`<td>${escapeHtml(mat.unit)}</td><td>₹${mat.rate.toFixed(2)}</td><td>${mat.qty}</td>`;
+      rows+=`<td>₹${(mat.subtotal||0).toFixed(2)}</td>`;
+      rows+=`<td style="color:#c0392b;">₹${(mat.gst||0).toFixed(2)}</td>`;
+      rows+=`<td><strong>₹${mat.lineTotal.toFixed(2)}</strong></td>`;
+      if(mi===0){
+        rows+=`<td rowspan="${mc}" style="vertical-align:middle;">${escapeHtml(inv.purchaseBy)}</td>`;
+        rows+=`<td rowspan="${mc}" style="vertical-align:middle;">${escapeHtml(inv.paymentCondition)}</td>`;
+        rows+=`<td rowspan="${mc}" style="vertical-align:middle;">${escapeHtml(inv.paymentMode)}</td>`;
+        rows+=`<td rowspan="${mc}" style="vertical-align:middle;">${escapeHtml(inv.remarks)}</td>`;
+        rows+=`<td rowspan="${mc}" style="vertical-align:middle;font-weight:700;color:#c0392b;">₹${inv.invoiceGrandTotal.toFixed(2)}</td>`;
+      }
+      rows+=`</tr>`;
+    });
+  });
+  const totalSum=data.reduce((s,r)=>s+r.invoiceGrandTotal,0).toFixed(2);
+  const totalGst=data.reduce((s,r)=>s+r.materials.reduce((a,m)=>a+(m.gst||0),0),0).toFixed(2);
+  const win=window.open('','_blank'); if(!win){alert('Please allow pop-ups.');return;}
+  win.document.write(`<!DOCTYPE html><html><head><title>NTPC Cash Purchase Register</title>
+  <style>body{font-family:Segoe UI,Arial;margin:1.5rem;font-size:0.72rem;}
+  .header{text-align:center;margin-bottom:12px;}.header h1{font-size:1.2rem;}
+  .header p{color:#555;} table{border-collapse:collapse;width:100%;}
+  th,td{border:1px solid #555;padding:5px 4px;vertical-align:middle;text-align:center;}
+  th{background:#1e4663;color:white;font-size:0.68rem;}
+  .footer{margin-top:12px;text-align:center;font-size:0.68rem;color:#666;}
+  @media print{th{background:#333!important;color:white!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style>
+  </head><body>
+  <div class="header">
+    <h1>NTPC UNCHAHAR — EMD LIGHTING DIVISION</h1>
+    <p>Feroze Gandhi Unchahar Thermal Power Station, Uttar Pradesh — 229406</p>
+    <p><strong>Cash Purchase Register</strong> | Printed: ${new Date().toLocaleString('en-IN')}</p>
+    <p>Total Invoices: ${data.length} | Total Value: ₹${totalSum} | Total GST: ₹${totalGst}</p>
+  </div>
+  <table><thead>
+    <tr>
+      <th rowspan="2">#</th><th rowspan="2">Entry Date</th><th rowspan="2">Inv Date</th>
+      <th rowspan="2">Inv/GEM No</th><th rowspan="2">Supplier</th>
+      <th rowspan="2">Address</th><th rowspan="2">Mobile</th>
+      <th colspan="8">Material Details</th>
+      <th rowspan="2">Purchase By</th><th rowspan="2">Pay Cond.</th>
+      <th rowspan="2">Pay Mode</th><th rowspan="2">Remarks</th><th rowspan="2">Inv. Total</th>
+    </tr>
+    <tr><th>HSN</th><th>Material Desc</th><th>Unit</th><th>Rate</th><th>Qty</th><th>Subtotal</th><th>GST</th><th>Line Total</th></tr>
+  </thead><tbody>${rows}</tbody></table>
+  <div class="footer">NTPC Unchahar | Computer generated register</div>
+  </body></html>`);
+  win.document.close(); setTimeout(()=>win.print(),500);
+}
+
+// ══════════════════════════════════════════════
+//  MINI CALENDAR — POPUP + MANUAL DATE INPUT
+// ══════════════════════════════════════════════
+let miniCalDate = new Date();
+let miniCalSelected = null;
+let miniCalIsOpen = false;
+
+/* ── open / close toggle ── */
+function toggleMiniCal(e) {
+  e.stopPropagation();
+  miniCalIsOpen = !miniCalIsOpen;
+  const wrap = document.getElementById('miniCalWrap');
+  const btn  = document.getElementById('calToggleBtn');
+  const chev = document.getElementById('calChevron');
+  if(miniCalIsOpen) {
+    miniCalRender();
+    wrap.classList.add('open');
+    btn.classList.add('cal-active');
+    if(chev) chev.style.transform = 'rotate(180deg)';
+  } else {
+    wrap.classList.remove('open');
+    btn.classList.remove('cal-active');
+    if(chev) chev.style.transform = 'rotate(0)';
+  }
+}
+
+function closeMiniCal() {
+  miniCalIsOpen = false;
+  const wrap = document.getElementById('miniCalWrap');
+  const btn  = document.getElementById('calToggleBtn');
+  const chev = document.getElementById('calChevron');
+  if(wrap) wrap.classList.remove('open');
+  if(btn && !calDateFilter) btn.classList.remove('cal-active');
+  if(chev) chev.style.transform = 'rotate(0)';
+}
+
+/* close when clicking outside */
+document.addEventListener('click', function(e) {
+  const container = document.getElementById('calPopupContainer');
+  if(container && !container.contains(e.target)) closeMiniCal();
+});
+
+/* ── render calendar grid ── */
+function miniCalRender() {
+  const year  = miniCalDate.getFullYear();
+  const month = miniCalDate.getMonth();
+  const today = new Date();
+  const mNames = ['January','February','March','April','May','June',
+                  'July','August','September','October','November','December'];
+
+  const titleEl = document.getElementById('miniCalMonthTitle');
+  const lblEl   = document.getElementById('miniCalMonthBtn');
+  if(titleEl) titleEl.textContent = mNames[month] + ' ' + year;
+  if(lblEl)   lblEl.textContent   = mNames[month].slice(0,3) + ' ' + year;
+
+  /* dot markers — dates that have invoices */
+  const invDates = new Set();
+  invoiceRecords.forEach(r => {
+    if(r.entryDate)   invDates.add(r.entryDate);
+    if(r.invoiceDate) invDates.add(r.invoiceDate);
+  });
+
+  const grid = document.getElementById('miniCalGrid');
+  if(!grid) return;
+  grid.innerHTML = '';
+
+  const firstDay    = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const daysInPrev  = new Date(year, month, 0).getDate();
+
+  /* prev-month filler */
+  for(let i = 0; i < firstDay; i++) {
+    const btn = document.createElement('button');
+    btn.className   = 'mini-cal-day other-month';
+    btn.disabled    = true;
+    btn.textContent = daysInPrev - firstDay + 1 + i;
+    grid.appendChild(btn);
+  }
+
+  /* current month */
+  for(let d = 1; d <= daysInMonth; d++) {
+    const btn = document.createElement('button');
+    btn.className   = 'mini-cal-day';
+    btn.textContent = d;
+
+    const mm      = String(month + 1).padStart(2, '0');
+    const dd      = String(d).padStart(2, '0');
+    const dateStr = `${year}-${mm}-${dd}`;
+
+    if(invDates.has(dateStr)) btn.classList.add('has-invoice');
+
+    if(today.getFullYear() === year && today.getMonth() === month && today.getDate() === d)
+      btn.classList.add('today');
+
+    if(miniCalSelected &&
+       miniCalSelected.year  === year &&
+       miniCalSelected.month === month + 1 &&
+       miniCalSelected.day   === d)
+      btn.classList.add('selected');
+
+    btn.onclick = (ev) => { ev.stopPropagation(); miniCalSelectDay(year, month + 1, d); };
+    grid.appendChild(btn);
+  }
+
+  /* next-month filler */
+  const total     = firstDay + daysInMonth;
+  const remaining = total % 7 === 0 ? 0 : 7 - (total % 7);
+  for(let d = 1; d <= remaining; d++) {
+    const btn = document.createElement('button');
+    btn.className   = 'mini-cal-day other-month';
+    btn.disabled    = true;
+    btn.textContent = d;
+    grid.appendChild(btn);
+  }
+}
+
+/* ── navigation ── */
+function miniCalNav(dir) {
+  miniCalDate = new Date(miniCalDate.getFullYear(), miniCalDate.getMonth() + dir, 1);
+  miniCalRender();
+}
+function miniCalGoToday() {
+  miniCalDate = new Date();
+  miniCalRender();
+}
+
+/* ── select a day from grid ── */
+function miniCalSelectDay(year, month, day) {
+  /* toggle off if same date */
+  if(miniCalSelected &&
+     miniCalSelected.year  === year &&
+     miniCalSelected.month === month &&
+     miniCalSelected.day   === day) {
+    clearCalDateFilter(); return;
+  }
+  const mm      = String(month).padStart(2, '0');
+  const dd      = String(day).padStart(2, '0');
+  const dateStr = `${year}-${mm}-${dd}`;
+  _applyDateFilter(dateStr, year, month, day);
+  /* close popup after pick */
+  setTimeout(closeMiniCal, 250);
+}
+
+/* ── manual date input ── */
+function applyManualDate() {
+  const inp = document.getElementById('calManualInput');
+  if(!inp || !inp.value) return;
+  const dateStr = inp.value;            // "YYYY-MM-DD"
+  const parts   = dateStr.split('-');
+  if(parts.length !== 3) return;
+  const yr = parseInt(parts[0]);
+  const mo = parseInt(parts[1]);
+  const dy = parseInt(parts[2]);
+  if(isNaN(yr) || isNaN(mo) || isNaN(dy)) return;
+
+  /* jump calendar view to that month */
+  miniCalDate = new Date(yr, mo - 1, 1);
+  miniCalSelected = { year: yr, month: mo, day: dy };
+  _applyDateFilter(dateStr, yr, mo, dy);
+  miniCalRender();
+}
+
+/* ── shared helper to set filter & update UI ── */
+function _applyDateFilter(dateStr, year, month, day) {
+  miniCalSelected = { year, month, day };
+  calDateFilter   = dateStr;
+
+  const dd   = String(day).padStart(2, '0');
+  const mm   = String(month).padStart(2, '0');
+  const fmtd = `${dd}-${mm}-${year}`;
+
+  const infoEl  = document.getElementById('miniCalInfo');
+  const barEl   = document.getElementById('calDateFilterBar');
+  const barTxt  = document.getElementById('calDateFilterText');
+  const dotEl   = document.getElementById('calDotBadge');
+  const btnEl   = document.getElementById('calToggleBtn');
+  const manInp  = document.getElementById('calManualInput');
+
+  if(infoEl)  infoEl.textContent  = '✅ ' + fmtd;
+  if(barTxt)  barTxt.textContent  = '📅 Date filter: ' + fmtd + '  (Entry or Invoice date)';
+  if(barEl)   barEl.classList.add('show');
+  if(dotEl)   dotEl.style.display = 'block';
+  if(btnEl)   btnEl.classList.add('cal-active');
+  if(manInp)  manInp.value        = dateStr;
+
+  miniCalRender();
+  renderReceiptTable();
+}
+
+/* ── clear filter ── */
+function clearCalDateFilter() {
+  miniCalSelected = null;
+  calDateFilter   = null;
+
+  const barEl  = document.getElementById('calDateFilterBar');
+  const infoEl = document.getElementById('miniCalInfo');
+  const dotEl  = document.getElementById('calDotBadge');
+  const btnEl  = document.getElementById('calToggleBtn');
+  const manInp = document.getElementById('calManualInput');
+
+  if(barEl)   barEl.classList.remove('show');
+  if(infoEl)  infoEl.textContent  = '📅 Select a date';
+  if(dotEl)   dotEl.style.display = 'none';
+  if(btnEl)   btnEl.classList.remove('cal-active');
+  if(manInp)  manInp.value        = '';
+
+  miniCalRender();
+  renderReceiptTable();
+}
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+/* ══ SPLASH SCREEN LOGIC ══ */
+(function(){
+  const splash = document.getElementById('introSplash');
+  const status = document.getElementById('splashStatus');
+  if(!splash) return;
+  // progress bar animation = 0.8s delay + 2.2s run = 3.0s -> let it finish fully
+  const msgs = [
+    'Loading modules…',
+    'Reading local storage…',
+    'Preparing dashboard…',
+    'Almost ready…',
+    'Welcome! ✅'
+  ];
+  let i = 0;
+  const iv = setInterval(()=>{
+    if(i < msgs.length && status) status.textContent = msgs[i++];
+    else clearInterval(iv);
+  }, 600);
+  const hide = () => {
+    clearInterval(iv);
+    splash.classList.add('hide');
+    setTimeout(()=>{ splash.style.display='none'; }, 700);
+  };
+  // hide only after the full intro animation has played out
+  setTimeout(hide, 3200);
+})();
+
+
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('entryDate').value=getToday();
+  loadFromStorage();
+  addMaterialRow();
+  document.getElementById('addMaterialBtn').onclick=()=>addMaterialRow();
+  document.getElementById('saveMultiInvoiceBtn').onclick=saveMultiInvoice;
+  document.getElementById('clearFormBtn').onclick=clearForm;
+  miniCalRender();
+  
+  const clk = () => {
+    const n=new Date();
+    const el=document.getElementById('liveClock');
+    if(el) el.textContent=n.toLocaleTimeString('en-IN',{hour12:false});
+  };
+  clk(); setInterval(clk,1000);
+  // Pending reminder
+  setInterval(()=>{
+    const r=document.getElementById('dash-pend-reminder');
+    if(r&&r.textContent){r.style.opacity='0';setTimeout(()=>{r.style.opacity='1';r.textContent='🔔 Reminder: Please pay immediately! Pending bills are unpaid.';},200);}
+  },15000);
+});
+</script>
+</body>
+</html>
